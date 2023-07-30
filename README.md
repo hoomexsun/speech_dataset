@@ -1,6 +1,6 @@
 # speech_dataset
 
-A Set of Tools used in creating Manipuri Dataset in both Bengali and Meetei/Meitei Mayek Script
+A Set of Tools used in creating Manipuri Dataset in both Bengali and Meetei/Meitei Mayek Script.
 
 ## 0. Short Description
 
@@ -139,6 +139,16 @@ for idx, file_path in enumerate(files):
 
 You can use GUI through `gui.py` or `main.py -g`
 
+- Uses [SunValley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
+
+- Screenshot 1
+
+![GUI Mode Screenshot 1](./images/gui_1.png)
+
+- Screenshot 2
+
+![GUI Mode Screenshot 2](./images/gui_2.png)
+
 ## 3. Script Mode
 
 | Function | Input Type | Command |
@@ -202,7 +212,7 @@ You can use GUI through `gui.py` or `main.py -g`
  
 ```
 
-### 4.1 Data Directory
+### 4.1. Data Directory
 
 ```bash
 ├── data
@@ -247,7 +257,7 @@ You can use GUI through `gui.py` or `main.py -g`
 │ │ └── *.wav
 ```
 
-### 4.2 Resource Directory
+### 4.2. Resource Directory
 
 ```bash
 ├── res
@@ -265,20 +275,18 @@ You can use GUI through `gui.py` or `main.py -g`
 │   └── *.json
 ```
 
-## 5. Issues
+## 5. Known Issues
 
 There are few issues which needs to be resolved.
 
-### 5.1 Preprocess
+- Preprocessing
+  - Cannot ignore the `UnicodeDecodeError` characters in RTF file which were encoded in `cp1252` as the actual `utf-8` characters are used as s550 glyphs.
 
-Cannot ignore the `UnicodeDecodeError` characters in RTF file which were encoded in `cp1252` as the actual `utf-8` characters are used as s550 glyphs.
+- Correction
+  - Some characters has virama which should not have been there.
+  - One character from s550 appears as bn which is incorrect.
 
-### 5.2 Correction
+- Transliteration
 
-- Some characters has virama which should not have been there.
-- One character from s550 appears as bn which is incorrect.
-
-### 4.3 Transliterations
-
-- last two characters skip, fix the algorithm.
-- cannot identify coda as lonsum in case of nor viramma clusters.
+  - last two characters skipped, fix the algorithm.
+  - cannot identify coda as lonsum in case of non-viramma clusters.

@@ -258,7 +258,7 @@ def gui() -> None:
     """
     root = tk.Tk()
     sv_ttk.set_theme("dark")
-    root.title("speech_nitm: GUI Mode")
+    root.title("speech_dataset: GUI Mode")
     root.geometry("%dx%d+0+0" % (920, 600))
     root.resizable(False, False)
     root.update()
