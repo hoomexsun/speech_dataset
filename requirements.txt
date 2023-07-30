@@ -1,0 +1,6 @@
+chardet
+pandas
+pyperclip
+striprtf
+sv-ttk
+tqdm
