@@ -1,10 +1,10 @@
 from itertools import chain
 from pathlib import Path
 from typing import Dict, List, Tuple
-from utils.utils import Utils
+from utils.utils import Project, Utils
 
 
-class Utterance(Utils):
+class Utterance(Project):
     def __init__(
         self, title: str = "Utterance", num_files: int = 0, quiet: bool = False
     ) -> None:
@@ -32,7 +32,7 @@ class Utterance(Utils):
     def utterance_file(self, file_path: Path, idx: int = -1) -> str:
         self.display(title=self.title, target=file_path.as_posix(), idx=idx)
         return self.utterance(
-            self.read_encoded_file(file_path=file_path), file_path=file_path
+            Utils.read_encoded_file(file_path=file_path), file_path=file_path
         )
 
     def utterance(self, content: str, file_path: Path) -> str:
@@ -40,7 +40,7 @@ class Utterance(Utils):
         utterances = self.__init_utts(input_data=content, file_path=file_path)
 
         # Display Number of Utterances
-        super().display_line(
+        Utils.display_line(
             title="Utterances",
             suffix="Saving Utterances",
             target=f"Number of utterances: {len(utterances)}",
@@ -91,7 +91,7 @@ class Utterance(Utils):
 
     @staticmethod
     def split_id_and_utt(file_path: Path) -> Tuple[List, List]:
-        temp = Utterance.read_encoded_file(file_path=file_path)
+        temp = Utils.read_encoded_file(file_path=file_path)
         lines = temp.split("\n")
         utt_ids, utterances = [], []
         for line in lines:
@@ -123,5 +123,5 @@ class Utterance(Utils):
         for utt in content.split(self.delimiter):
             if utt.strip() not in self.whitespaces:
                 utts.append(utt.strip())
-        cleaned_utts = [self.clean_s550_data(utt) for utt in utts if utt.strip()]
+        cleaned_utts = [Utils.clean_s550_data(utt) for utt in utts if utt.strip()]
         return cleaned_utts

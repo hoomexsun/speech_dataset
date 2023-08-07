@@ -2,10 +2,10 @@ from typing import Collection, Dict, List, Set, Tuple
 from config.paths import *
 from utils.position import BEGIN, END, MID
 from utils.syllabic import CODA, ONSET, NUCLEUS
-from utils.utils import Utils
+from utils.utils import Project, Utils
 
 
-class Clusters(Utils):
+class Clusters(Project):
     bn_cmap = {}
     mm_m2l = {}
 
@@ -15,10 +15,10 @@ class Clusters(Utils):
 
     @classmethod
     def __init_res(cls):
-        bn_to_mm_charmap = cls.get_dict_from_json(
+        bn_to_mm_charmap = Utils.get_dict_from_json(
             file_path=TRANSLITERATION_DIR / B2M_FILE
         )
-        mm_charmap = cls.get_dict_from_json(file_path=ALPHABET_DIR / MM_ALPHABET_FILE)
+        mm_charmap = Utils.get_dict_from_json(file_path=ALPHABET_DIR / MM_ALPHABET_FILE)
         cls.bn_cmap = bn_to_mm_charmap.get("bn_single_charmap", {})
         cls.bn_viramma_mm_apun = bn_to_mm_charmap.get("bn_viramma_mm_apun", {})
         cls.bn_viramma_mm_coda = bn_to_mm_charmap.get("bn_viramma_mm_coda", {})
@@ -36,7 +36,7 @@ class Clusters(Utils):
     def get_clusters(content: str) -> Set:
         virama = "\u09cd"
         chars_to_remove = [",", "-", "-", ".", "(", ")"]
-        content = Clusters.remove_chars(content=content, chars=chars_to_remove)
+        content = Utils.remove_chars(content=content, chars=chars_to_remove)
         clusters = set()
         i = 0
         while i < len(content):
@@ -113,20 +113,20 @@ class Clusters(Utils):
                 BEGIN: {
                     mp: cls.get_mm_cluster(cluster, BEGIN),
                     ct: len(b_egs),
-                    "pct": Clusters.get_pct(len(b_egs), num_clusters),
+                    "pct": Utils.get_pct(len(b_egs), num_clusters),
                 },
                 MID: {
                     mp: cls.get_mm_cluster(cluster, MID),
                     ct: len(m_egs),
-                    "pct": Clusters.get_pct(len(m_egs), num_clusters),
+                    "pct": Utils.get_pct(len(m_egs), num_clusters),
                 },
                 END: {
                     mp: cls.get_mm_cluster(cluster, END),
                     ct: len(e_egs),
-                    "pct": Clusters.get_pct(len(e_egs), num_clusters),
+                    "pct": Utils.get_pct(len(e_egs), num_clusters),
                 },
                 ct: len(egs),
-                "pct": Clusters.get_pct(len(egs), total_words),
+                "pct": Utils.get_pct(len(egs), total_words),
             }
         return detailed_clusters, clusters_pct
 

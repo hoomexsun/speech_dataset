@@ -1,9 +1,9 @@
 from utils.resource_bank import *
 from config.paths import *
-from utils.utils import Utils
+from utils.utils import Project, Utils
 
 
-class Correction_resource(Utils):
+class Correction_resource(Project):
     def __init__(self, quiet: bool = False, res_dir: Path = CORRECTION_DIR) -> None:
         super().__init__(title="resource", quiet=quiet)
         self.res_dir = res_dir
@@ -35,11 +35,11 @@ class Correction_resource(Utils):
         }
 
         self.display(desc="build-correction-resource")
-        self.write_json_file(data=chars_to_replace, file_path=self.res_dir / SNB_FILE)
-        self.write_json_file(data=position_to_fix, file_path=self.res_dir / FPOS_FILE)
+        Utils.write_json_file(data=chars_to_replace, file_path=self.res_dir / SNB_FILE)
+        Utils.write_json_file(data=position_to_fix, file_path=self.res_dir / FPOS_FILE)
 
 
-class Transliteration_resource(Utils):
+class Transliteration_resource(Project):
     def __init__(
         self, quiet: bool = False, res_dir: Path = TRANSLITERATION_DIR
     ) -> None:
@@ -66,10 +66,10 @@ class Transliteration_resource(Utils):
         }
 
         self.display(desc="build-transliteration-resource")
-        self.write_json_file(data=bn_to_mm_charmap, file_path=self.res_dir / B2M_FILE)
+        Utils.write_json_file(data=bn_to_mm_charmap, file_path=self.res_dir / B2M_FILE)
 
 
-class Alphabet_resource(Utils):
+class Alphabet_resource(Project):
     def __init__(self, quiet: bool = False, res_dir: Path = ALPHABET_DIR) -> None:
         super().__init__(title="resource", quiet=quiet)
         self.__init_res()
@@ -86,7 +86,7 @@ class Alphabet_resource(Utils):
         }
 
         self.display(desc="build-alphabet-resource")
-        self.write_json_file(data=mm_charmap, file_path=MM_ALPHABET_FILE)
+        Utils.write_json_file(data=mm_charmap, file_path=MM_ALPHABET_FILE)
 
 
 def main():

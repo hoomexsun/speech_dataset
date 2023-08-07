@@ -93,7 +93,6 @@ output_text = c.correct('some text in s550')
 ```
 
 - File
-
 ```python
 content = c.correct_file(file="path_to_file")
 ```

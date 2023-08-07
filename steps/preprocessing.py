@@ -1,9 +1,9 @@
 from pathlib import Path
 import re
-from utils.utils import Utils
+from utils.utils import Project, Utils
 
 
-class Preprocessing(Utils):
+class Preprocessing(Project):
     def __init__(
         self, title: str = "Preprocessing", num_files: int = 0, quiet: bool = False
     ) -> None:
@@ -25,9 +25,9 @@ class Preprocessing(Utils):
     def preprocess_file(self, file_path: Path, idx: int = -1) -> str:
         self.display(title=self.title, target=file_path.as_posix(), idx=idx)
         if file_path.suffix == ".rtf":
-            return self.preprocess(self.get_text_from_rtf(file_path=file_path))
+            return self.preprocess(Utils.get_text_from_rtf(file_path=file_path))
         elif file_path.suffix == ".txt":
-            return self.preprocess(self.read_encoded_file(file_path=file_path))
+            return self.preprocess(Utils.read_encoded_file(file_path=file_path))
         else:
             return "Unsupported file type"
 
@@ -47,20 +47,15 @@ class Preprocessing(Utils):
         news_string = self.remove_all_occurrences(news_string, self.signature_tune)
 
         # Step 5: Remove all sound bytes line (inaudible)
-        news_string = self.remove_all_occurrences(news_string, self.sound_bytes)
+        news_string = self.replace_all_occurrences(news_string, self.sound_bytes, "\n")
 
         # Step 6: Remove numberings (inaudible)
         news_string = self.remove_number_before_substring(news_string, ")")
 
         # Step 7: Replace punctuations, new lines, and tab spaces with empty space
-        news_string = (
-            news_string.replace("\n", " ")
-            .replace("\t", " ")
-            .replace(".", " ")
-            .replace("-", " ")
-            .replace("(", " ")
-            .replace(")", " ")
-        )
+        punctuations = ["\n", "\t", ".", "-", "(", ")"]
+        for punctuation in punctuations:
+            news_string = news_string.replace(punctuation, " ")
 
         # Step 8: Replace multiple spaces into one single space
         news_string = re.sub(r"\s+", " ", news_string).strip()
@@ -97,22 +92,22 @@ class Preprocessing(Utils):
     @staticmethod
     def remove_words_before_character(input_string, character):
         lines = input_string.split("\n")
-        result_lines = []
-
-        for line in lines:
-            if character in line:
-                updated_line = line.split(character, 1)[-1].lstrip()
-            else:
-                updated_line = line
-            result_lines.append(updated_line)
+        result_lines = [
+            line.split(character, 1)[-1].lstrip() if character in line else line
+            for line in lines
+        ]
 
         return "\n".join(result_lines)
 
     @staticmethod
     def remove_all_occurrences(input_string, substring):
-        while substring in input_string:
-            input_string = input_string.replace(substring, "")
-        return input_string
+        modified_string = input_string.replace(substring, "")
+        return modified_string
+
+    @staticmethod
+    def replace_all_occurrences(input_string, substring, replacement):
+        modified_string = input_string.replace(substring, replacement)
+        return modified_string
 
     @staticmethod
     def remove_number_before_substring(input_string, character):

@@ -8,7 +8,7 @@ import pandas as pd
 import csv
 
 
-class Utils:
+class Project:
     def __init__(
         self,
         title: str = "main",
@@ -37,7 +37,7 @@ class Utils:
             idx (int, optional): Index information for the line. Defaults to -1.
         """
         if not self.quiet:
-            self.display_line(
+            Utils.display_line(
                 title=title if title else self.title,
                 target=target,
                 suffix=desc,
@@ -45,6 +45,20 @@ class Utils:
                 idx=idx,
             )
 
+    def set_num_files(self, num_files: int):
+        """Set the number of files processed.
+
+        Args:
+            num_files (int): Number of files processed.
+        """
+        self.num_files = num_files
+
+    @staticmethod
+    def change_path(file_path: Path, dir: Path, extension: str = "txt"):
+        return dir / f"{file_path.stem}.{extension}"
+
+
+class Utils:
     # Display Function for use inside the Custom Classes
     @staticmethod
     def display_line(
@@ -71,14 +85,6 @@ class Utils:
     @staticmethod
     def get_files(dir: Path, extension: str = "txt") -> List[Path]:
         return list(dir.glob(f"*.{extension.lower()}"))
-
-    def set_num_files(self, num_files: int):
-        """Set the number of files processed.
-
-        Args:
-            num_files (int): Number of files processed.
-        """
-        self.num_files = num_files
 
     @staticmethod
     def format_line(
@@ -158,7 +164,17 @@ class Utils:
         return plain_text
 
     @staticmethod
-    def write_text_file(content: str, file_path: Path):
+    def modify_unicode_file_path(file_path: Path) -> Path:
+        file_name = file_path.stem + "_utf"
+        return file_path.parent / file_name
+
+    @staticmethod
+    def write_text_file(
+        content: str, file_path: Path, unicode: bool = False, skip_newline: bool = False
+    ) -> None:
+        if unicode:
+            content = Utils.get_unicode_string(content, skip_newline)
+            file_path = Utils.modify_unicode_file_path(file_path)
         Utils.display_line(
             title="write", target=file_path.as_posix(), suffix="writing-text-file"
         )
@@ -168,19 +184,15 @@ class Utils:
 
     @staticmethod
     def write_json_file(data: Dict, file_path: Path, unicode: bool = False) -> None:
-        json_data = (
-            json.dumps(data) if unicode else json.dumps(data, ensure_ascii=False)
-        )
         if unicode:
-            file_name = file_path.name + "_utf"
-            file_path = file_path.parent / file_name
-            Utils.display_line(
-                title="write", target=file_path.as_posix(), suffix="writing-json-file"
-            )
+            json_data = json.dumps(data)
+            file_path = Utils.modify_unicode_file_path(file_path)
         else:
-            Utils.display_line(
-                title="write", target=file_path.as_posix(), suffix="writing-json-file"
-            )
+            json_data = json.dumps(data, ensure_ascii=False)
+
+        Utils.display_line(
+            title="write", target=file_path.as_posix(), suffix="writing-json-file"
+        )
         Utils.write_encoded_file(
             content=json_data, file_path=file_path.with_suffix(".json")
         )
@@ -292,10 +304,13 @@ class Utils:
         print(Utils.get_unicode_string(content=content))
 
     @staticmethod
-    def get_unicode_string(content: str) -> str:
+    def get_unicode_string(content: str, skip_newline: bool = False) -> str:
         ss = io.StringIO()
         for char in content:
-            ss.write("\\u" + format(ord(char), "x").zfill(4))
+            if char is "\n" and skip_newline:
+                ss.write("\n")
+            else:
+                ss.write("\\u" + format(ord(char), "x").zfill(4))
         return ss.getvalue()
 
     # Unused Functions

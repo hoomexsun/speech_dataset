@@ -2,10 +2,10 @@ import argparse
 from config.paths import *
 from steps.utterance import Utterance
 from typing import List
-from utils.utils import Utils
+from utils.utils import Project, Utils
 
 
-class Transliteration(Utils):
+class Transliteration(Project):
     def __init__(
         self, title: str = "Transliteration", num_files: int = 0, quiet: bool = False
     ) -> None:
@@ -19,8 +19,8 @@ class Transliteration(Utils):
         self.virama = "\u09cd"
 
     def __init_res(self):
-        b2m_charmap = self.get_dict_from_json(file_path=self.res_dir / B2M_FILE)
-        mm_charmap = self.get_dict_from_json(file_path=MM_ALPHABET_FILE)
+        b2m_charmap = Utils.get_dict_from_json(file_path=self.res_dir / B2M_FILE)
+        mm_charmap = Utils.get_dict_from_json(file_path=MM_ALPHABET_FILE)
         self.bn_single_charmap = b2m_charmap.get("bn_single_charmap", {})
         self.bn_viramma_mm_apun = b2m_charmap.get("bn_viramma_mm_apun", {})
         self.bn_viramma_mm_coda = b2m_charmap.get("bn_viramma_mm_coda", {})
@@ -40,7 +40,7 @@ class Transliteration(Utils):
     ) -> str:
         self.display(title=self.title, target=file_path.as_posix(), idx=idx)
         if is_utt:
-            content = self.read_encoded_file(file_path=file_path)
+            content = Utils.read_encoded_file(file_path=file_path)
             utterances_dict = Utterance.utt_content_to_dict(content)
             transliterated_utterances_dict = {
                 utt_id: self.transliterate(utt)
@@ -48,7 +48,7 @@ class Transliteration(Utils):
             }
             return Utterance.utt_dict_to_content(transliterated_utterances_dict)
         else:
-            return self.transliterate(self.read_encoded_file(file_path=file_path))
+            return self.transliterate(Utils.read_encoded_file(file_path=file_path))
 
     def transliterate(self, content: str) -> str:
         # Step 1: Single letter except viramma
@@ -74,7 +74,7 @@ class Transliteration(Utils):
 
     # Extra Public methods
     def word_map(self, input_data: str, wmap_file: Path = WORDMAP_T_FILE) -> str:
-        wmap_dict = self.get_dict_from_json(wmap_file)
+        wmap_dict = Utils.get_dict_from_json(wmap_file)
         output = [
             wmap_dict.get(word, self.transliterate(content=word))
             for word in input_data.split()
@@ -83,16 +83,16 @@ class Transliteration(Utils):
 
     # Private methods
     def pre_mapping(self, data: str) -> str:
-        return self.replace_chars(content=data, charmap=self.bn_single_charmap)
+        return Utils.replace_chars(content=data, charmap=self.bn_single_charmap)
 
     def fix_apun(self, data: str) -> str:
-        return self.replace_two_chars(content=data, charmap=self.bn_viramma_mm_apun)
+        return Utils.replace_two_chars(content=data, charmap=self.bn_viramma_mm_apun)
 
     def fix_coda_viramma(self, data: str) -> str:
-        return self.replace_two_chars(content=data, charmap=self.bn_viramma_mm_coda)
+        return Utils.replace_two_chars(content=data, charmap=self.bn_viramma_mm_coda)
 
     def fix_coda_lonsum(self, data: str) -> str:
-        return self.replace_two_chars(content=data, charmap=self.mm_e_lonsum_coda)
+        return Utils.replace_two_chars(content=data, charmap=self.mm_e_lonsum_coda)
 
     def fix_lonsum_from_mapum_pair(self, data: str) -> str:
         output_data = list(data)

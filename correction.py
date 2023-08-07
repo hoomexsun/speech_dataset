@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import List, Tuple
 from config.paths import *
-from utils.utils import Utils
+from utils.utils import Project, Utils
 from steps.utterance import Utterance
 
 
-class Correction(Utils):
+class Correction(Project):
     def __init__(
         self, title: str = "Correction", num_files: int = 0, quiet: bool = False
     ) -> None:
@@ -19,8 +19,8 @@ class Correction(Utils):
         self.virama = "\u09cd"
 
     def __init_res(self):
-        chars_to_replace = self.get_dict_from_json(file_path=self.res_dir / SNB_FILE)
-        position_to_fix = self.get_dict_from_json(file_path=self.res_dir / FPOS_FILE)
+        chars_to_replace = Utils.get_dict_from_json(file_path=self.res_dir / SNB_FILE)
+        position_to_fix = Utils.get_dict_from_json(file_path=self.res_dir / FPOS_FILE)
         self.s550_single_charmap = chars_to_replace.get("s550_single_charmap", {})
         self.s550_double_charmap = chars_to_replace.get("s550_double_charmap", {})
         self.s550_triple_charmap = chars_to_replace.get("s550_triple_charmap", {})
@@ -40,14 +40,14 @@ class Correction(Utils):
     def correct_file(self, file_path: Path, idx: int = -1, is_utt: bool = False) -> str:
         self.display(title=self.title, target=file_path.as_posix(), idx=idx)
         if is_utt:
-            content = self.read_encoded_file(file_path=file_path)
+            content = Utils.read_encoded_file(file_path=file_path)
             utterances_dict = Utterance.utt_content_to_dict(content)
             corrected_utterances_dict = {
                 utt_id: self.correct(utt) for utt_id, utt in utterances_dict.items()
             }
             return Utterance.utt_dict_to_content(corrected_utterances_dict)
         else:
-            return self.correct(self.read_encoded_file(file_path=file_path))
+            return self.correct(Utils.read_encoded_file(file_path=file_path))
 
     def correct(self, content: str) -> str:
         # Step 1: Remove insignificant characters
@@ -81,7 +81,7 @@ class Correction(Utils):
 
     # Private methods
     def __remove_insignificant_chars(self, data: str) -> str:
-        return self.remove_chars(content=data, chars=self.s550_insignificant_chars)
+        return Utils.remove_chars(content=data, chars=self.s550_insignificant_chars)
 
     def __map_unicode(self, data: str) -> str:
         mapped_data = []
@@ -101,7 +101,7 @@ class Correction(Utils):
         return "".join(mapped_data)
 
     def __fix_double_virama(self, data: str) -> str:
-        return self.fix_mistypes(content=data, chars=[self.virama])
+        return Utils.fix_mistypes(content=data, chars=[self.virama])
 
     def __fix_suffix_r(self, data: str) -> str:
         fixed_data = []
@@ -156,7 +156,7 @@ class Correction(Utils):
         return "".join(fixed_data)
 
     def __post_mapping_r(self, data: str) -> str:
-        return self.replace_chars(content=data, charmap=self.s550_post_charmap)
+        return Utils.replace_chars(content=data, charmap=self.s550_post_charmap)
 
     def __fix_prefix_v(self, data: str) -> str:
         fixed_data = []
@@ -204,11 +204,11 @@ class Correction(Utils):
         return "".join(fixed_data)
 
     def __combine_vowels(self, data: str) -> str:
-        return self.replace_chars(content=data, charmap=self.bn_double_vowel_charmap)
+        return Utils.replace_chars(content=data, charmap=self.bn_double_vowel_charmap)
 
     def __fix_errors_and_mistypes(self, data: str) -> str:
-        data = self.replace_chars(content=data, charmap=self.bn_fix_error_charmap)
-        return self.fix_mistypes(
+        data = Utils.replace_chars(content=data, charmap=self.bn_fix_error_charmap)
+        return Utils.fix_mistypes(
             content=data, chars=self.bn_fix_prefix_char_v + self.bn_fix_suffix_char_v
         )
 
