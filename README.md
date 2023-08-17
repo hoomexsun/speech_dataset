@@ -141,11 +141,11 @@ You can use GUI through `gui.py` or `main.py -g`
 
 - Uses [SunValley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
 
-- __Test__ (Test main features using input string)
+- **Test** (Test main features using input string)
 
 ![GUI Test Mode](./images/test_snap.png)
 
-- __Analyze__ (Find words containing the entered character)
+- **Analyze** (Find words containing the entered character)
 
 ![GUI Analyze Mode](./images/analyze_snap.png)
 
