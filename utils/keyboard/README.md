@@ -27,3 +27,7 @@ Hold Ctrl and Type. (Might not probably work if Ctrl is bound as part of shortcu
 ## 2. Font
 
 Nirmala UI supports Meetei Mayek by default in windows. But it is preferred to download and install [Noto Sans Meetei Mayek](https://fonts.google.com/noto/specimen/Noto+Sans+Meetei+Mayek) from Google Fonts.
+
+## 3. Bengali Keymap (Windows Default)
+
+![bengali_keys](./images/bn_keys.png)

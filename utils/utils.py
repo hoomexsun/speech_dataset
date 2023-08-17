@@ -2,7 +2,6 @@ import io
 from pathlib import Path
 from striprtf.striprtf import rtf_to_text
 from typing import Dict, List, Tuple
-import chardet
 import json
 import pandas as pd
 import csv
@@ -183,6 +182,15 @@ class Utils:
         )
 
     @staticmethod
+    def write_markdown_file(content: str, file_path: Path) -> None:
+        Utils.display_line(
+            title="write", target=file_path.as_posix(), suffix="writing-markdown-file"
+        )
+        Utils.write_encoded_file(
+            content=content, file_path=file_path.with_suffix(".md")
+        )
+
+    @staticmethod
     def write_json_file(data: Dict, file_path: Path, unicode: bool = False) -> None:
         if unicode:
             json_data = json.dumps(data)
@@ -313,15 +321,29 @@ class Utils:
                 ss.write("\\u" + format(ord(char), "x").zfill(4))
         return ss.getvalue()
 
+    # Calculations
+    @staticmethod
+    def pct(num: int, total: int) -> str:
+        """Calculate the percentage.
+
+        Args:
+            num (int): Numerator value.
+            total (int): Total value.
+
+        Returns:
+            str: Percentage value formatted as a string with two decimal places.
+        """
+        return format(100 * num / total, ".2f")
+
     # Unused Functions
     @staticmethod
     def display_unicode_counts_in_file(file_path: Path):
         data = Utils.read_encoded_file(file_path)
-        df = Utils.get_unicode_info_as_df(content=data)
+        df = Utils.unicode_as_df(content=data)
         print(df)
 
     @staticmethod
-    def get_unicode_info_as_df(content: str) -> pd.DataFrame:
+    def unicode_as_df(content: str) -> pd.DataFrame:
         d = {}
         for char in content:
             if char in d:
@@ -334,17 +356,3 @@ class Utils:
                 }
         df = pd.DataFrame.from_dict(d, orient="index")
         return df
-
-    # Calculations
-    @staticmethod
-    def get_pct(num: int, total: int) -> str:
-        """Calculate the percentage.
-
-        Args:
-            num (int): Numerator value.
-            total (int): Total value.
-
-        Returns:
-            str: Percentage value formatted as a string with two decimal places.
-        """
-        return format(100 * num / total, ".2f")

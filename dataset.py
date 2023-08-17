@@ -6,6 +6,7 @@ from transliteration import Transliteration
 from steps.clusters import Clusters
 from config.paths import *
 from steps.utterance import Utterance
+from utils.builder import MarkdownBuilderUtils
 from utils.utils import Utils, Project
 
 
@@ -231,6 +232,10 @@ class DatasetProject(Project):
             data=clusters_egs, file_path=CLUSTERS_EGS_FILE, unicode=True
         )
 
+        MarkdownBuilderUtils.build_markdown_file(
+            d=clusters_egs, file_name=CLUSTERS_EGS_FILE.stem  # type: ignore
+        )
+
         # Step 4.2.3: Build clusters map
         clusters_map = Clusters.build_probable_map(clusters=clusters)
         Utils.display_line(
@@ -241,6 +246,9 @@ class DatasetProject(Project):
         Utils.write_json_file(data=clusters_map, file_path=CLUSTERS_MAP_FILE)
         Utils.write_json_file(
             data=clusters_map, file_path=CLUSTERS_MAP_FILE, unicode=True
+        )
+        MarkdownBuilderUtils.build_markdown_file(
+            d=clusters_map, file_name=CLUSTERS_MAP_FILE.stem  # type: ignore
         )
 
         # Step 4.2.4: Build detailed cluster dictionary
@@ -261,4 +269,7 @@ class DatasetProject(Project):
         Utils.write_json_file(data=clusters_pct, file_path=CLUSTERS_PCT_FILE)
         Utils.write_json_file(
             data=clusters_pct, file_path=CLUSTERS_PCT_FILE, unicode=True
+        )
+        MarkdownBuilderUtils.build_markdown_file(
+            d=clusters_pct, file_name=CLUSTERS_PCT_FILE.stem
         )

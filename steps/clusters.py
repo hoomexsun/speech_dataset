@@ -113,20 +113,20 @@ class Clusters(Project):
                 BEGIN: {
                     mp: cls.get_mm_cluster(cluster, BEGIN),
                     ct: len(b_egs),
-                    "pct": Utils.get_pct(len(b_egs), num_clusters),
+                    "pct": Utils.pct(len(b_egs), num_clusters),
                 },
                 MID: {
                     mp: cls.get_mm_cluster(cluster, MID),
                     ct: len(m_egs),
-                    "pct": Utils.get_pct(len(m_egs), num_clusters),
+                    "pct": Utils.pct(len(m_egs), num_clusters),
                 },
                 END: {
                     mp: cls.get_mm_cluster(cluster, END),
                     ct: len(e_egs),
-                    "pct": Utils.get_pct(len(e_egs), num_clusters),
+                    "pct": Utils.pct(len(e_egs), num_clusters),
                 },
                 ct: len(egs),
-                "pct": Utils.get_pct(len(egs), total_words),
+                "pct": Utils.pct(len(egs), total_words),
             }
         return detailed_clusters, clusters_pct
 

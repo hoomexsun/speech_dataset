@@ -93,6 +93,7 @@ output_text = c.correct('some text in s550')
 ```
 
 - File
+
 ```python
 content = c.correct_file(file="path_to_file")
 ```
@@ -140,13 +141,15 @@ You can use GUI through `gui.py` or `main.py -g`
 
 - Uses [SunValley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
 
-- Screenshot 1
+- __Test__ (Test main features using input string)
 
-![GUI Mode Screenshot 1](./images/gui_1.png)
+![GUI Test Mode](./images/test_snap.png)
 
-- Screenshot 2
+- __Analyze__ (Find words containing the entered character)
 
-![GUI Mode Screenshot 2](./images/gui_2.png)
+![GUI Analyze Mode](./images/analyze_snap.png)
+
+- Toggle Function in Analyze mode is currently available for only Windows at the moment.
 
 ## 3. Script Mode
 
@@ -184,17 +187,25 @@ You can use GUI through `gui.py` or `main.py -g`
 ├── theory
 │ ├── Language_data_research.docx
 │ └── Language_data_research.pdf
+├── output
+│ ├── */*.md
 ├── utils
 │ ├── charset
 │ │ ├── images
 │ │ │ └── *.png
 │ │ └── README.md
-│ ├── keyboards
+│ ├── fonts
+│ │ ├── fontloader.py
+│ │ └── S-550.TTF
+│ ├── gui
+│ │ ├── analyze_frame.py
+│ │ ├── components.py
+│ │ └── test_frame.py
+│ ├── keyboard
 │ │ ├── images
 │ │ │ └── *.png
 │ │ ├── khut_e.zip
 │ │ └── README.md
-│ ├── gui_units.py
 │ ├── position.py
 │ ├── resource_bank.py
 │ ├── syllabic.py
@@ -289,3 +300,16 @@ There are few issues which needs to be resolved.
 
   - last two characters skipped, fix the algorithm.
   - cannot identify coda as lonsum in case of non-viramma clusters.
+
+## 6. Target
+
+- for spelling like security
+  - vowel is repeated (u and uu) change it to u
+  - position in s550 is at the left but on bn it is at the right.
+
+
+## 7. New Approach
+
+Target invisible characters
+1. ¡
+- Is used to transform d to u i.e., l is d -> l¡ü is u, And ü is dependent suffix.
