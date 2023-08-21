@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sv_ttk
+from steps.res import init_resources
 from utils.gui.analyze_frame import AnalyzeFrame
 from utils.gui.test_frame import TestFrame
 
@@ -23,6 +24,7 @@ class App:
 
 
 if __name__ == "__main__":
+    init_resources()
     root = tk.Tk()
     sv_ttk.set_theme("light")
     app = App(root)

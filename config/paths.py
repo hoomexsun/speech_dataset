@@ -3,7 +3,7 @@ from pathlib import Path
 # -------------------------------- DATA PATHS -------------------------------- #
 DATA_ROOT = Path("data")
 
-RTF, RAW, WAV = "rtf", "raw", "wav"
+RTF, RAW, WAV, SEG = "rtf", "raw", "wav", "seg"
 S550, BN, MM = "s550", "bn", "mm"
 SCP, UTT, TXT, WORDS, CHARS = "script", "utt", "txt", "words", "chars"
 
@@ -13,6 +13,7 @@ S550_DATA = DATA_ROOT / S550
 BN_DATA = DATA_ROOT / BN
 MM_DATA = DATA_ROOT / MM
 WAV_DATA = DATA_ROOT / WAV  # Directory for audio files
+SEG_DATA = DATA_ROOT / SEG  # Directory for segmented audio files
 
 SCP_S550_DIR = S550_DATA / SCP  # Directory for preprocessed scripts in s550
 SCP_BN_DIR = BN_DATA / SCP  # Directory for preprocessed scripts in Bengali Unicode
@@ -31,6 +32,7 @@ data_dirs = [
     RTF_DATA,
     RAW_DATA,
     WAV_DATA,
+    SEG_DATA,
 ]
 
 WORDS_FILE = "words.txt"

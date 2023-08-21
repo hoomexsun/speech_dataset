@@ -7,7 +7,7 @@ from utils.utils import Project, Utils
 
 class Transliteration(Project):
     def __init__(
-        self, title: str = "Transliteration", num_files: int = 0, quiet: bool = False
+        self, title: str = "Transliteration", num_files: int = 0, quiet: bool = True
     ) -> None:
         super().__init__(title, num_files, quiet)
         self.__init_vars()

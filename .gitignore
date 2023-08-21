@@ -18,6 +18,7 @@ pip-delete-this-directory.txt
 # Personal Folder
 data/rtf
 data/raw
+data/seg
 data/wav
 data/s550/script
 data/s550/utt

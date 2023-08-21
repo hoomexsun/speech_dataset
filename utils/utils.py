@@ -174,18 +174,18 @@ class Utils:
         if unicode:
             content = Utils.get_unicode_string(content, skip_newline)
             file_path = Utils.modify_unicode_file_path(file_path)
-        Utils.display_line(
-            title="write", target=file_path.as_posix(), suffix="writing-text-file"
-        )
+        # Utils.display_line(
+        #     title="write", target=file_path.as_posix(), suffix="writing-text-file"
+        # )
         Utils.write_encoded_file(
             content=content, file_path=file_path.with_suffix(".txt")
         )
 
     @staticmethod
     def write_markdown_file(content: str, file_path: Path) -> None:
-        Utils.display_line(
-            title="write", target=file_path.as_posix(), suffix="writing-markdown-file"
-        )
+        # Utils.display_line(
+        #     title="write", target=file_path.as_posix(), suffix="writing-markdown-file"
+        # )
         Utils.write_encoded_file(
             content=content, file_path=file_path.with_suffix(".md")
         )
@@ -198,9 +198,9 @@ class Utils:
         else:
             json_data = json.dumps(data, ensure_ascii=False)
 
-        Utils.display_line(
-            title="write", target=file_path.as_posix(), suffix="writing-json-file"
-        )
+        # Utils.display_line(
+        #     title="write", target=file_path.as_posix(), suffix="writing-json-file"
+        # )
         Utils.write_encoded_file(
             content=json_data, file_path=file_path.with_suffix(".json")
         )
@@ -208,9 +208,9 @@ class Utils:
     @staticmethod
     def write_csv_file(data: Dict, fieldnames: Tuple, file_path: Path) -> None:
         file_path = file_path.with_suffix(".csv")
-        Utils.display_line(
-            title="write", target=file_path.as_posix(), suffix="writing-csv-file"
-        )
+        # Utils.display_line(
+        #     title="write", target=file_path.as_posix(), suffix="writing-csv-file"
+        # )
         with open(file_path, mode="w", encoding="utf-8", newline="") as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
@@ -220,9 +220,9 @@ class Utils:
     # Basic File Utility Functions
     @staticmethod
     def read_encoded_file(file_path: Path) -> str:
-        Utils.display_line(
-            title="read", target=file_path.as_posix(), suffix="reading-file"
-        )
+        # Utils.display_line(
+        #     title="read", target=file_path.as_posix(), suffix="reading-file"
+        # )
         return file_path.read_text(encoding="utf-8")
 
     @staticmethod

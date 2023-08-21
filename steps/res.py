@@ -4,7 +4,7 @@ from utils.utils import Project, Utils
 
 
 class Correction_resource(Project):
-    def __init__(self, quiet: bool = False, res_dir: Path = CORRECTION_DIR) -> None:
+    def __init__(self, quiet: bool = True, res_dir: Path = CORRECTION_DIR) -> None:
         super().__init__(title="resource", quiet=quiet)
         self.res_dir = res_dir
         self.__init_res()
@@ -89,11 +89,11 @@ class Alphabet_resource(Project):
         Utils.write_json_file(data=mm_charmap, file_path=MM_ALPHABET_FILE)
 
 
-def main():
+def init_resources():
     cr = Correction_resource()
     tr = Transliteration_resource()
     ar = Alphabet_resource()
 
 
 if __name__ == "__main__":
-    main()
+    init_resources()

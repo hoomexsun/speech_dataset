@@ -7,7 +7,7 @@ from steps.utterance import Utterance
 
 class Correction(Project):
     def __init__(
-        self, title: str = "Correction", num_files: int = 0, quiet: bool = False
+        self, title: str = "Correction", num_files: int = 0, quiet: bool = True
     ) -> None:
         super().__init__(title, num_files, quiet)
         self.__init_vars()

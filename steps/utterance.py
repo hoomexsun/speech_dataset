@@ -6,7 +6,7 @@ from utils.utils import Project, Utils
 
 class Utterance(Project):
     def __init__(
-        self, title: str = "Utterance", num_files: int = 0, quiet: bool = False
+        self, title: str = "Utterance", num_files: int = 0, quiet: bool = True
     ) -> None:
         super().__init__(title, num_files, quiet)
         self.__init_vars()
@@ -40,11 +40,11 @@ class Utterance(Project):
         utterances = self.__init_utts(input_data=content, file_path=file_path)
 
         # Display Number of Utterances
-        Utils.display_line(
-            title="Utterances",
-            suffix="Saving Utterances",
-            target=f"Number of utterances: {len(utterances)}",
-        )
+        # Utils.display_line(
+        #     title="Utterances",
+        #     suffix="Saving Utterances",
+        #     target=f"Number of utterances: {len(utterances)}",
+        # )
 
         # Step 2: Build Utterance File from Dictionary
         content = self.utt_dict_to_content(utterances)
@@ -60,7 +60,6 @@ class Utterance(Project):
     @staticmethod
     def utt_lists_to_dict(utt_ids: List[str], utterances: List[str]) -> Dict[str, str]:
         return {utt_id: utt for utt_id, utt in zip(utt_ids, utterances)}
-        # return {utt_ids[i]: utterances[i] for i in range(len(utt_ids))}
 
     @staticmethod
     def utt_dict_to_content(utterances_dict: Dict[str, str]) -> str:

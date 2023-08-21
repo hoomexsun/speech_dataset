@@ -1,4 +1,6 @@
 from typing import List, Tuple
+
+from tqdm import tqdm
 from correction import Correction
 from steps.preprocessing import Preprocessing
 from steps.res import Alphabet_resource, Correction_resource, Transliteration_resource
@@ -12,7 +14,7 @@ from utils.utils import Utils, Project
 
 class DatasetProject(Project):
     def __init__(
-        self, title: str = "main", num_files: int = 0, quiet: bool = False
+        self, title: str = "main", num_files: int = 0, quiet: bool = True
     ) -> None:
         super().__init__(title, num_files, quiet)
         self.__init_res()
@@ -46,15 +48,22 @@ class DatasetProject(Project):
     #             file_path=Utils.build_path(file_path=file_path, dir=RAW_DATA),
     #         )
 
+    # TODO: Restructure progress bar using tqdm DONE
+    # TODO: Move every basic steps to LOG style formatting
+    # TODO: Divide the different major steps into different functions. Use self for shared variable.
     def run(self, rtf: bool = False):
         if rtf:
             files = Utils.get_files(dir=RTF_DATA, extension="rtf")
         else:
             files = Utils.get_files(dir=RAW_DATA)
 
+        total_files = len(files)
+
         # Step 0: Preprocessing
         self.__init_classes(len(files))
-        for idx, file_path in enumerate(files):
+        for idx, file_path in enumerate(
+            tqdm(files, total=total_files, desc="Preprocessing Files")
+        ):
             content = self.p.preprocess_file(file_path=file_path, idx=idx)
             Utils.write_text_file(
                 content=content,
@@ -63,7 +72,9 @@ class DatasetProject(Project):
 
         # Step 1: Utterances
         files = Utils.get_files(dir=SCP_S550_DIR)
-        for idx, file_path in enumerate(files):
+        for idx, file_path in enumerate(
+            tqdm(files, total=total_files, desc="Building Utterances")
+        ):
             content = self.u.utterance_file(file_path=file_path, idx=idx)
             Utils.write_text_file(
                 content=content,
@@ -89,7 +100,9 @@ class DatasetProject(Project):
         # Step 2: Correction
         # Step 2.0.1: Correction of Scripts
         files = Utils.get_files(dir=SCP_S550_DIR)
-        for idx, file_path in enumerate(files):
+        for idx, file_path in enumerate(
+            tqdm(files, total=total_files, desc="Correcting Scripts")
+        ):
             content = self.c.correct_file(file_path=file_path, idx=idx)
             Utils.write_text_file(
                 content=content,
@@ -98,7 +111,9 @@ class DatasetProject(Project):
 
         # Step 2.0.2: Correction of Utterances
         files = Utils.get_files(dir=UTT_S550_DIR)
-        for idx, file_path in enumerate(files):
+        for idx, file_path in enumerate(
+            tqdm(files, total=total_files, desc="Correcting Utterances")
+        ):
             content = self.c.correct_file(file_path=file_path, idx=idx, is_utt=True)
             Utils.write_text_file(
                 content=content,
@@ -122,7 +137,9 @@ class DatasetProject(Project):
         # Step 3: Transliteration
         # Step 3.0.1: Transliteration of Scripts
         files = Utils.get_files(dir=SCP_BN_DIR)
-        for idx, file_path in enumerate(files):
+        for idx, file_path in enumerate(
+            tqdm(files, total=total_files, desc="Transliterating Scripts")
+        ):
             content = self.t.transliterate_file(file_path=file_path, idx=idx)
             Utils.write_text_file(
                 content=content,
@@ -131,7 +148,9 @@ class DatasetProject(Project):
 
         # Step 3.0.2: Transliteration of Utterances
         files = Utils.get_files(dir=UTT_BN_DIR)
-        for idx, file_path in enumerate(files):
+        for idx, file_path in enumerate(
+            tqdm(files, total=total_files, desc="Transliterating Utterances")
+        ):
             content = self.t.transliterate_file(
                 file_path=file_path, idx=idx, is_utt=True
             )
