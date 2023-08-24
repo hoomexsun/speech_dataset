@@ -29,22 +29,12 @@ class Utterance(Project):
         ]
 
     # Public methods
-    def utterance_file(self, file_path: Path, idx: int = -1) -> str:
-        self.display(title=self.title, target=file_path.as_posix(), idx=idx)
-        return self.utterance(
-            Utils.read_encoded_file(file_path=file_path), file_path=file_path
-        )
-
-    def utterance(self, content: str, file_path: Path) -> str:
+    def utterance(self, file_path: Path) -> str:
         # Step 1: Build Utterance Dictionary with utterances and corresponding ids
-        utterances = self.__init_utts(input_data=content, file_path=file_path)
-
-        # Display Number of Utterances
-        # Utils.display_line(
-        #     title="Utterances",
-        #     suffix="Saving Utterances",
-        #     target=f"Number of utterances: {len(utterances)}",
-        # )
+        utterances = self.__init_utts(
+            input_data=Utils.read_encoded_file(file_path=file_path),
+            file_path=file_path,
+        )
 
         # Step 2: Build Utterance File from Dictionary
         content = self.utt_dict_to_content(utterances)
@@ -52,6 +42,33 @@ class Utterance(Project):
         # Returns final content
         return content
 
+    # Private methods
+    def __init_utts(self, input_data: str, file_path: Path) -> Dict:
+        return {
+            self.__build_utt_id(file_path=file_path, idx=idx): utt
+            for idx, utt in enumerate(self.__get_utt_rows(content=input_data))
+        }
+
+    @staticmethod
+    def __build_utt_id(file_path: Path, idx: int) -> str:
+        utt_id = file_path.name.split(".")[0]
+        if idx < 9:  # idx starts from 0
+            utt_id = f"{utt_id}00{idx+1}"
+        elif idx < 99:
+            utt_id = f"{utt_id}0{idx+1}"
+        else:
+            utt_id = f"{utt_id}{idx+1}"
+        return utt_id
+
+    def __get_utt_rows(self, content: str) -> List[str]:
+        utts = []
+        for utt in content.split(self.delimiter):
+            if utt.strip() not in self.whitespaces:
+                utts.append(utt.strip())
+        cleaned_utts = [Utils.clean_s550_data(utt) for utt in utts if utt.strip()]
+        return cleaned_utts
+
+    # Utility Functions
     # Extra Public Methods 1
     @staticmethod
     def utt_lists_to_content(utt_ids: List[str], utterances: List[str]) -> str:
@@ -98,29 +115,3 @@ class Utterance(Project):
             utt_ids.append(utt_id)
             utterances.extend(utterance)
         return utt_ids, utterances
-
-    # Private methods
-    def __init_utts(self, input_data: str, file_path: Path) -> Dict:
-        return {
-            self.__build_utt_id(file_path=file_path, idx=idx): utt
-            for idx, utt in enumerate(self.__get_utt_rows(content=input_data))
-        }
-
-    @staticmethod
-    def __build_utt_id(file_path: Path, idx: int) -> str:
-        utt_id = file_path.name.split(".")[0]
-        if idx < 9:  # idx starts from 0
-            utt_id = f"{utt_id}00{idx+1}"
-        elif idx < 99:
-            utt_id = f"{utt_id}0{idx+1}"
-        else:
-            utt_id = f"{utt_id}{idx+1}"
-        return utt_id
-
-    def __get_utt_rows(self, content: str) -> List[str]:
-        utts = []
-        for utt in content.split(self.delimiter):
-            if utt.strip() not in self.whitespaces:
-                utts.append(utt.strip())
-        cleaned_utts = [Utils.clean_s550_data(utt) for utt in utts if utt.strip()]
-        return cleaned_utts

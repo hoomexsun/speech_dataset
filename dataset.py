@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 from tqdm import tqdm
 from correction import Correction
@@ -45,7 +45,8 @@ class DatasetProject(Project):
     #     for file_path in files:
     #         Utils.write_text_file(
     #             content="",
-    #             file_path=Utils.build_path(file_path=file_path, dir=RAW_DATA),
+    #             file_path=self.build_path(file_path=file_path, dir=RAW_DATA),
+    #             exist_ok=False,
     #         )
 
     # TODO: Restructure progress bar using tqdm DONE
@@ -57,30 +58,24 @@ class DatasetProject(Project):
         else:
             files = Utils.get_files(dir=RAW_DATA)
 
-        total_files = len(files)
-
-        # Step 0: Preprocessing
         self.__init_classes(len(files))
-        for idx, file_path in enumerate(
-            tqdm(files, total=total_files, desc="Preprocessing Files")
-        ):
-            content = self.p.preprocess_file(file_path=file_path, idx=idx)
-            Utils.write_text_file(
-                content=content,
-                file_path=self.change_path(file_path=file_path, dir=SCP_S550_DIR),
-            )
 
-        # Step 1: Utterances
-        files = Utils.get_files(dir=SCP_S550_DIR)
-        for idx, file_path in enumerate(
-            tqdm(files, total=total_files, desc="Building Utterances")
-        ):
-            content = self.u.utterance_file(file_path=file_path, idx=idx)
-            Utils.write_text_file(
-                content=content,
-                file_path=self.change_path(file_path=file_path, dir=UTT_S550_DIR),
-            )
-            self.s550_utts.update(self.u.utt_content_to_dict(content))
+        # Step 0: Preprocessing [NEW]
+        self.from_dir(
+            dir=RAW_DATA,
+            desc="Preprocessing Files",
+            func=self.p.preprocess_file,
+            output_dir=SCP_S550_DIR,
+        )
+
+        # Step 1: Utterances [NEW]
+        self.s550_utts = self.from_dir(
+            dir=SCP_S550_DIR,
+            desc="Building Utterances",
+            func=self.u.utterance,
+            output_dir=UTT_S550_DIR,
+            content_as_dict=True,
+        )
 
         # Step 1.1: Write s550 text
         self.display(
@@ -99,27 +94,22 @@ class DatasetProject(Project):
 
         # Step 2: Correction
         # Step 2.0.1: Correction of Scripts
-        files = Utils.get_files(dir=SCP_S550_DIR)
-        for idx, file_path in enumerate(
-            tqdm(files, total=total_files, desc="Correcting Scripts")
-        ):
-            content = self.c.correct_file(file_path=file_path, idx=idx)
-            Utils.write_text_file(
-                content=content,
-                file_path=self.change_path(file_path=file_path, dir=SCP_BN_DIR),
-            )
+        # Step 2.0.1: Correction of Scripts [NEW]
+        self.from_dir(
+            dir=SCP_S550_DIR,
+            desc="Correcting Scripts",
+            func=self.c.correct_script,
+            output_dir=SCP_BN_DIR,
+        )
 
-        # Step 2.0.2: Correction of Utterances
-        files = Utils.get_files(dir=UTT_S550_DIR)
-        for idx, file_path in enumerate(
-            tqdm(files, total=total_files, desc="Correcting Utterances")
-        ):
-            content = self.c.correct_file(file_path=file_path, idx=idx, is_utt=True)
-            Utils.write_text_file(
-                content=content,
-                file_path=self.change_path(file_path=file_path, dir=UTT_BN_DIR),
-            )
-            self.bn_utts.update(self.u.utt_content_to_dict(content))
+        # Step 2.0.2: Correction of Utterances [NEW]
+        self.bn_utts = self.from_dir(
+            dir=UTT_S550_DIR,
+            desc="Correcting Utterances",
+            func=self.c.correct_utterances,
+            output_dir=UTT_BN_DIR,
+            content_as_dict=True,
+        )
 
         # Step 2.1: Write bn text
         self.display(title=self.u.title, target=TEXT_BN_FILE.as_posix(), desc="saving")
@@ -135,30 +125,22 @@ class DatasetProject(Project):
         self.save_chars(content=utterances, file_path=CHARS_BN_FILE, avoid_utf=False)
 
         # Step 3: Transliteration
-        # Step 3.0.1: Transliteration of Scripts
-        files = Utils.get_files(dir=SCP_BN_DIR)
-        for idx, file_path in enumerate(
-            tqdm(files, total=total_files, desc="Transliterating Scripts")
-        ):
-            content = self.t.transliterate_file(file_path=file_path, idx=idx)
-            Utils.write_text_file(
-                content=content,
-                file_path=self.change_path(file_path=file_path, dir=SCP_MM_DIR),
-            )
+        # Step 3.0.1: Transliteration of Scripts [NEW]
+        self.from_dir(
+            dir=SCP_BN_DIR,
+            desc="Transliterating Scripts",
+            func=self.t.transliterate_script,
+            output_dir=SCP_MM_DIR,
+        )
 
-        # Step 3.0.2: Transliteration of Utterances
-        files = Utils.get_files(dir=UTT_BN_DIR)
-        for idx, file_path in enumerate(
-            tqdm(files, total=total_files, desc="Transliterating Utterances")
-        ):
-            content = self.t.transliterate_file(
-                file_path=file_path, idx=idx, is_utt=True
-            )
-            Utils.write_text_file(
-                content=content,
-                file_path=self.change_path(file_path=file_path, dir=UTT_MM_DIR),
-            )
-            self.mm_utts.update(self.u.utt_content_to_dict(content))
+        # Step 3.0.2: Transliteration of Utterances [NEW]
+        self.mm_utts = self.from_dir(
+            dir=UTT_BN_DIR,
+            desc="Transliterating Utterances",
+            func=self.t.transliterate_utterances,
+            output_dir=UTT_MM_DIR,
+            content_as_dict=True,
+        )
 
         # Step 3.1: Write mm text
         Utils.display_line(
@@ -188,6 +170,27 @@ class DatasetProject(Project):
         # Step 4.2 Generate Clusters Info
         bn_words = Utils.read_encoded_file(file_path=WORDS_BN_FILE).split("\n")
         self.generate_clusters_info(bn_words=bn_words)
+
+    # Run files
+    def from_dir(
+        self,
+        dir: Path,
+        desc: str,
+        func: Callable,
+        output_dir: Path,
+        content_as_dict: bool = False,
+    ):
+        content_dict = {}
+        files = Utils.get_files(dir=dir, extension="txt")
+        for idx, file_path in enumerate(tqdm(files, total=len(files), desc=desc)):
+            content = func(file_path=file_path)
+            Utils.write_text_file(
+                content=content,
+                file_path=Project.change_path(file_path=file_path, dir=output_dir),
+            )
+            if content_as_dict:
+                content_dict.update(self.u.utt_content_to_dict(content))
+        return content_dict
 
     @staticmethod
     def save_words(content: str, file_path: Path, avoid_utf: bool = True) -> None:

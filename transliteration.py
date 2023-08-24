@@ -35,20 +35,16 @@ class Transliteration(Project):
         self.mm_khudam = mm_charmap.get("mm_khudam", [])
 
     # Public methods
-    def transliterate_file(
-        self, file_path: Path, idx: int = -1, is_utt: bool = False
-    ) -> str:
-        self.display(title=self.title, target=file_path.as_posix(), idx=idx)
-        if is_utt:
-            content = Utils.read_encoded_file(file_path=file_path)
-            utterances_dict = Utterance.utt_content_to_dict(content)
-            transliterated_utterances_dict = {
-                utt_id: self.transliterate(utt)
-                for utt_id, utt in utterances_dict.items()
-            }
-            return Utterance.utt_dict_to_content(transliterated_utterances_dict)
-        else:
-            return self.transliterate(Utils.read_encoded_file(file_path=file_path))
+    def transliterate_script(self, file_path: Path) -> str:
+        return self.transliterate(Utils.read_encoded_file(file_path=file_path))
+
+    def transliterate_utterances(self, file_path: Path) -> str:
+        utterances_dict = Utterance.utt_content_to_dict(
+            Utils.read_encoded_file(file_path=file_path)
+        )
+        return Utterance.utt_dict_to_content(
+            {utt_id: self.transliterate(utt) for utt_id, utt in utterances_dict.items()}
+        )
 
     def transliterate(self, content: str) -> str:
         # Step 1: Single letter except viramma

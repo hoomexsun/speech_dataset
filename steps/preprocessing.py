@@ -53,7 +53,7 @@ class Preprocessing(Project):
         news_string = self.remove_number_before_substring(news_string, ")")
 
         # Step 7: Replace punctuations, new lines, and tab spaces with empty space
-        punctuations = ["\n", "\t", ".", "-", "(", ")"]
+        punctuations = ["\n", "\t", ".", "-", "(", ")", "‘", "’"]
         for punctuation in punctuations:
             news_string = news_string.replace(punctuation, " ")
 

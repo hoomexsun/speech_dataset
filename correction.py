@@ -37,17 +37,18 @@ class Correction(Project):
         self.bn_fix_error_charmap = chars_to_replace.get("bn_fix_error_charmap", {})
 
     # Public methods
-    def correct_file(self, file_path: Path, idx: int = -1, is_utt: bool = False) -> str:
-        self.display(title=self.title, target=file_path.as_posix(), idx=idx)
-        if is_utt:
-            content = Utils.read_encoded_file(file_path=file_path)
-            utterances_dict = Utterance.utt_content_to_dict(content)
-            corrected_utterances_dict = {
-                utt_id: self.correct(utt) for utt_id, utt in utterances_dict.items()
-            }
-            return Utterance.utt_dict_to_content(corrected_utterances_dict)
-        else:
-            return self.correct(Utils.read_encoded_file(file_path=file_path))
+    def correct_script(self, file_path: Path) -> str:
+        return self.correct(Utils.read_encoded_file(file_path=file_path))
+
+    def correct_utterances(
+        self, file_path: Path, idx: int = -1, is_utt: bool = False
+    ) -> str:
+        utterances_dict = Utterance.utt_content_to_dict(
+            Utils.read_encoded_file(file_path)
+        )
+        return Utterance.utt_dict_to_content(
+            {utt_id: self.correct(utt) for utt_id, utt in utterances_dict.items()}
+        )
 
     def correct(self, content: str) -> str:
         # Step 1: Remove insignificant characters
