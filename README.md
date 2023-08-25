@@ -16,29 +16,18 @@ The project consists of several modules:
 | **Script Mode**     | Offers CLI-based access to essential features.                                                                                  |
 | **Dataset**         | The main class containing the project pipeline.                                                                                 |
 | **Utils & Project** | A base class with utility functions and a framework for main classes.                                                           |
-| **Describe**        | Describe the dataset including speaker and utterance infos.                                                                     |
+| **Describe**        | Describe the dataset including speaker infos.                                                                                   |
 
 ## 2. Use Cases
 
-Import the necessary classes (always import Utils). Here's an example of reading a text file:
+Import the necessary classes and use functions from utils for computation. Here's an example of reading a text file:
 
 - _Using Utils as a utility class (since most methods are static):_
 
 ```python
-from utils.utils import Utils
+from utils.file import read_text_file
 ...
-content = Utils.read_text_file(file_path)
-```
-
-- _Inheriting from Utils:_
-
-```python
-from utils.utils import Utils
-class MyClass(Utils):
-    ...
-    def some_method():
-        content = self.read_text_file(file_path)
-        ...
+content = read_text_file(file_path)
 ```
 
 ### 2.1. Preprocessing
@@ -189,6 +178,10 @@ Use the provided GUI through `gui.py` or `main.py -g` [Underway].
 You can use the script mode for different functions:
 
 ```bash
+main.py
+gui.py
+describe.py
+audio_preparation.py
 correction.py string
 correction.py -f path/to/file
 correction.py -d path/to/dir
@@ -204,7 +197,7 @@ transliteration.py -d path/to/dir -w path/to/wordmap
 
 The project's directory structure is organized as follows:
 
-- `config`, `data`, `local`, `res`, `steps`, `theory`, `output`, and `utils` folders containing various modules.
+- `config`, `data`, `generated`, `local`, `res`, `steps`, `theory`, `output`, and `utils` folders containing various modules.
 - Different subfolders within `data`, `res`, and `utils` for better organization.
 - Configuration files, text files, scripts, and resource files are appropriately placed.
 
@@ -235,4 +228,4 @@ Extra:
 ## See also
 
 - [SunValley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
-- [Loading Custom Fonts in TKinter for Windows](<https://msdn.microsoft.com/en-us/library/dd183327(VS.85).aspx>).
+- [Loading Custom Fonts in Tkinter for Windows](<https://msdn.microsoft.com/en-us/library/dd183327(VS.85).aspx>).
