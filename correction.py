@@ -1,15 +1,21 @@
 from pathlib import Path
 from typing import List, Tuple
 from config.paths import *
-from utils.utils import Project, Utils
-from steps.utterance import Utterance
+from config.project import Project
+from utils.display import display_line
+from utils.file import get_dict_from_json, read_encoded_file
+from utils.text import (
+    fix_mistypes,
+    remove_chars,
+    replace_chars,
+    utt_content_to_dict,
+    utt_dict_to_content,
+)
 
 
 class Correction(Project):
-    def __init__(
-        self, title: str = "Correction", num_files: int = 0, quiet: bool = True
-    ) -> None:
-        super().__init__(title, num_files, quiet)
+    def __init__(self) -> None:
+        super().__init__("Correction")
         self.__init_vars()
         self.__init_res()
 
@@ -19,8 +25,8 @@ class Correction(Project):
         self.virama = "\u09cd"
 
     def __init_res(self):
-        chars_to_replace = Utils.get_dict_from_json(file_path=self.res_dir / SNB_FILE)
-        position_to_fix = Utils.get_dict_from_json(file_path=self.res_dir / FPOS_FILE)
+        chars_to_replace = get_dict_from_json(file_path=self.res_dir / SNB_FILE)
+        position_to_fix = get_dict_from_json(file_path=self.res_dir / FPOS_FILE)
         self.s550_single_charmap = chars_to_replace.get("s550_single_charmap", {})
         self.s550_double_charmap = chars_to_replace.get("s550_double_charmap", {})
         self.s550_triple_charmap = chars_to_replace.get("s550_triple_charmap", {})
@@ -38,15 +44,13 @@ class Correction(Project):
 
     # Public methods
     def correct_script(self, file_path: Path) -> str:
-        return self.correct(Utils.read_encoded_file(file_path=file_path))
+        return self.correct(read_encoded_file(file_path=file_path))
 
     def correct_utterances(
         self, file_path: Path, idx: int = -1, is_utt: bool = False
     ) -> str:
-        utterances_dict = Utterance.utt_content_to_dict(
-            Utils.read_encoded_file(file_path)
-        )
-        return Utterance.utt_dict_to_content(
+        utterances_dict = utt_content_to_dict(read_encoded_file(file_path))
+        return utt_dict_to_content(
             {utt_id: self.correct(utt) for utt_id, utt in utterances_dict.items()}
         )
 
@@ -82,7 +86,7 @@ class Correction(Project):
 
     # Private methods
     def __remove_insignificant_chars(self, data: str) -> str:
-        return Utils.remove_chars(content=data, chars=self.s550_insignificant_chars)
+        return remove_chars(content=data, chars=self.s550_insignificant_chars)
 
     def __map_unicode(self, data: str) -> str:
         mapped_data = []
@@ -102,7 +106,7 @@ class Correction(Project):
         return "".join(mapped_data)
 
     def __fix_double_virama(self, data: str) -> str:
-        return Utils.fix_mistypes(content=data, chars=[self.virama])
+        return fix_mistypes(content=data, chars=[self.virama])
 
     def __fix_suffix_r(self, data: str) -> str:
         fixed_data = []
@@ -144,10 +148,12 @@ class Correction(Project):
                     ) = self.__find_and_fix_position(
                         letter=data[i], remaining_letters=list(previous_letters[::-1])
                     )
-                if err:
-                    self.display(
-                        desc="Incorrect letters at the start of file", target="FIX"
-                    )
+                # if err:
+                #     display_line(
+                #         title=self.title,
+                #         desc="Incorrect letters at the start of file",
+                #         target="FIX",
+                #     )
                 fixed_data = (
                     fixed_data[: i - returned_index] + fixed_string_as_list[::-1]
                 )
@@ -157,7 +163,7 @@ class Correction(Project):
         return "".join(fixed_data)
 
     def __post_mapping_r(self, data: str) -> str:
-        return Utils.replace_chars(content=data, charmap=self.s550_post_charmap)
+        return replace_chars(content=data, charmap=self.s550_post_charmap)
 
     def __fix_prefix_v(self, data: str) -> str:
         fixed_data = []
@@ -191,10 +197,12 @@ class Correction(Project):
                     ) = self.__find_and_fix_position(
                         letter=data[i], remaining_letters=list(next_letters)
                     )
-                if err:
-                    self.display(
-                        desc="Incorrect letters at the end of file", target="FIX"
-                    )
+                # if err:
+                #     display_line(
+                #         title=self.title,
+                #         desc="Incorrect letters at the end of file",
+                #         target="FIX",
+                #     )
                 fixed_data += fixed_string_as_list
                 skip_index = i + indices_to_skip
             elif i == skip_index:
@@ -205,11 +213,11 @@ class Correction(Project):
         return "".join(fixed_data)
 
     def __combine_vowels(self, data: str) -> str:
-        return Utils.replace_chars(content=data, charmap=self.bn_double_vowel_charmap)
+        return replace_chars(content=data, charmap=self.bn_double_vowel_charmap)
 
     def __fix_errors_and_mistypes(self, data: str) -> str:
-        data = Utils.replace_chars(content=data, charmap=self.bn_fix_error_charmap)
-        return Utils.fix_mistypes(
+        data = replace_chars(content=data, charmap=self.bn_fix_error_charmap)
+        return fix_mistypes(
             content=data, chars=self.bn_fix_prefix_char_v + self.bn_fix_suffix_char_v
         )
 

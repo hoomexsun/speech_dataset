@@ -30,9 +30,12 @@ data/mm/script
 data/mm/utt
 data/mm/txt
 local
+logs
 res
 theory
 output
 
 # Backup Python files
 *_backup.py
+
+test.py

@@ -1,11 +1,12 @@
-from utils.resource_bank import *
+from config.project import Project
 from config.paths import *
-from utils.utils import Project, Utils
+from utils.file import write_json_file
+from utils.resource_bank import *
 
 
 class Correction_resource(Project):
-    def __init__(self, quiet: bool = True, res_dir: Path = CORRECTION_DIR) -> None:
-        super().__init__(title="resource", quiet=quiet)
+    def __init__(self, res_dir: Path = CORRECTION_DIR) -> None:
+        super().__init__("Correction resource")
         self.res_dir = res_dir
         self.__init_res()
 
@@ -34,16 +35,13 @@ class Correction_resource(Project):
             "bn_suffix_char_v": bn_suffix_char_v,
         }
 
-        self.display(desc="build-correction-resource")
-        Utils.write_json_file(data=chars_to_replace, file_path=self.res_dir / SNB_FILE)
-        Utils.write_json_file(data=position_to_fix, file_path=self.res_dir / FPOS_FILE)
+        write_json_file(data=chars_to_replace, file_path=self.res_dir / SNB_FILE)
+        write_json_file(data=position_to_fix, file_path=self.res_dir / FPOS_FILE)
 
 
 class Transliteration_resource(Project):
-    def __init__(
-        self, quiet: bool = False, res_dir: Path = TRANSLITERATION_DIR
-    ) -> None:
-        super().__init__(title="resource", quiet=quiet)
+    def __init__(self, res_dir: Path = TRANSLITERATION_DIR) -> None:
+        super().__init__("Transliteration resource")
         self.res_dir = res_dir
         self.__init_res()
 
@@ -65,13 +63,12 @@ class Transliteration_resource(Project):
             "mm_e_lonsum_coda": mm_e_lonsum_coda,
         }
 
-        self.display(desc="build-transliteration-resource")
-        Utils.write_json_file(data=bn_to_mm_charmap, file_path=self.res_dir / B2M_FILE)
+        write_json_file(data=bn_to_mm_charmap, file_path=self.res_dir / B2M_FILE)
 
 
 class Alphabet_resource(Project):
-    def __init__(self, quiet: bool = False, res_dir: Path = ALPHABET_DIR) -> None:
-        super().__init__(title="resource", quiet=quiet)
+    def __init__(self, res_dir: Path = ALPHABET_DIR) -> None:
+        super().__init__("Alphabet resource")
         self.__init_res()
 
     def __init_res(self):
@@ -84,9 +81,7 @@ class Alphabet_resource(Project):
             "mm_cheising": mm_cheising,
             "mm_khudam": mm_khudam,
         }
-
-        self.display(desc="build-alphabet-resource")
-        Utils.write_json_file(data=mm_charmap, file_path=MM_ALPHABET_FILE)
+        write_json_file(data=mm_charmap, file_path=MM_ALPHABET_FILE)
 
 
 def init_resources():

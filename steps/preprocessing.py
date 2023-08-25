@@ -1,18 +1,17 @@
 from pathlib import Path
 import re
-from utils.utils import Project, Utils
+
+from config.project import Project
+from utils.file import get_text_from_rtf, read_encoded_file
 
 
 class Preprocessing(Project):
-    def __init__(
-        self, title: str = "Preprocessing", num_files: int = 0, quiet: bool = True
-    ) -> None:
-        super().__init__(title, num_files, quiet)
+    def __init__(self) -> None:
+        super().__init__("Preprocessing")
         self.__init_strings()
 
     # Initializations
     def __init_strings(self):
-        # Define glyph characters and escape special characters
         self.signature_tune = "[ÎKì>W¡¹ iå¡¸>"
         # self.newspaper_headline = "[>l¡ü\\ ìšš¹ ëÒƒºàÒü"
         self.newspaper_headline = "[>l¡ü\\"
@@ -23,11 +22,10 @@ class Preprocessing(Project):
 
     # Public methods
     def preprocess_file(self, file_path: Path, idx: int = -1) -> str:
-        self.display(title=self.title, target=file_path.as_posix(), idx=idx)
         if file_path.suffix == ".rtf":
-            return self.preprocess(Utils.get_text_from_rtf(file_path=file_path))
+            return self.preprocess(get_text_from_rtf(file_path=file_path))
         elif file_path.suffix == ".txt":
-            return self.preprocess(Utils.read_encoded_file(file_path=file_path))
+            return self.preprocess(read_encoded_file(file_path=file_path))
         else:
             return "Unsupported file type"
 
@@ -69,7 +67,6 @@ class Preprocessing(Project):
             .replace("\n ", "\n")
         )
 
-        # Returns final news_string
         return news_string
 
     # Private methods

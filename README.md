@@ -14,8 +14,9 @@ The project consists of several modules:
 | **Transliteration** | Transliterates Bengali Unicode to Meetei Mayek Unicode using a rule-based method, supporting transliteration through a wordmap. |
 | **GUI Mode**        | Provides a GUI interface to test functions using input strings.                                                                 |
 | **Script Mode**     | Offers CLI-based access to essential features.                                                                                  |
-| **DatasetProject**  | The main class containing the project pipeline.                                                                                 |
-| **Utils**           | A base class with utility functions and a framework for main classes.                                                           |
+| **Dataset**         | The main class containing the project pipeline.                                                                                 |
+| **Utils & Project** | A base class with utility functions and a framework for main classes.                                                           |
+| **Describe**        | Describe the dataset including speaker and utterance infos.                                                                     |
 
 ## 2. Use Cases
 
@@ -44,99 +45,127 @@ class MyClass(Utils):
 
 Create a `Preprocessing` object and call the `preprocess_file()` method to format the news text from all files stored inside a specific directory into raw text files which can be used as input in further implementations.
 
-- Initialization
+- _Initialization_
 
 ```python
 from steps.preprocessing import Preprocessing
 p = Preprocessing()
 ```
 
-- Multiple Files in a directory
+- _Multiple Files in a directory_
 
 ```python
-for file_path in enumerate(files):
-    content = p.preprocess_file(file_path=file_path)
+for file_path in files:
+    content = p.preprocess_file(file_path)
 ```
 
 ### 2.2. Utterance
 
 Create a `Utterance` object and call the `utterance()` method to generate utterances from all files stored inside a specific directory.
 
-- Initialization
+- _Initialization_
 
 ```python
 from steps.utterance import Utterance
 u = Utterance()
 ```
 
-- Multiple Files in a directory
+- _All text files in a directory_
 
 ```python
-files = Utils.get_files(dir=SCP_S550_DIR)
+files = Utils.get_files(SCP_S550_DIR)
 for file_path in enumerate(files):
-    content = u.utterance(file_path=file_path)
+    content = u.utterance(file_path)
 ```
 
 ### 2.3. Correction
 
-Create a `Correction()` object and call the `correct_script()` method to generate the correct Bengali unicode from the s-550 glyphs.
+Create a `Correction()` object and call the `correct()`, `correct_script()` or `correct_utterances()` method to generate the correct Bengali unicode from the s-550 glyphs.
 
-- Initialization
+- _Initialization_
 
 ```python
 from correction import Correction
 c = Correction()
 ```
 
-- String
+- _String_
 
 ```python
-output_text = c.correct('some text in s550')
+output_text = c.correct('text in s550')
 ```
 
-- File
-
-````python
-content = c.correct_script(file="path_to_file")
-```Transliterating
-
-- Files inside a directory
+- _Script file_
 
 ```python
-files = Utils.get_files(dir=path/to/directory)
-for file_path in enumerate(files):
-    content = c.correct_script(file_path=file_path)
-````
+content = c.correct_script("path/to/file")
+```
+
+- _Utterance file_
+
+```python
+content = c.correct_utterances("path/to/file")
+```
+
+- _All script files inside a directory_
+
+```python
+files = Utils.get_files("path/to/directory")
+for file_path in files:
+    content = c.correct_script(file_path)
+```
+
+- _All utterance files inside a directory_
+
+```python
+files = Utils.get_files("path/to/directory")
+for file_path in files:
+    content = c.correct_utterances(file_path)
+```
 
 ### 2.4. Transliteration
 
-Create a `Transliteration()` object and call the `transliterate_script()` method to generate the correct Meetei Mayek unicode from the Bengali unicode.
+Create a `Transliteration()` object and call the `transliterate()`, `transliterate_script()` or `transliterate_utterances()` method to generate the correct Meetei Mayek unicode from the Bengali unicode.
 
-- Initialization
+- _Initialization_
 
 ```python
 from transliteration import Transliteration
 t = Transliteration()
 ```
 
-- String
+- _String_
 
 ```python
 output_text = t.transliterate('some text in bengali')
 ```
 
-- Single file
+- _Script file_
 
 ```python
-content = t.transliterate_script(file="path_to_file")
+content = t.transliterate_script("path/to/file")
 ```
 
-- All files inside a directory
+- _Utterance file_
 
 ```python
-files = Utils.get_files(dir=path/to/directory)
-for file_path in enumerate(files):
-    content = t.transliterate_script(file_path=file_path)
+content = t.transliterate_utterances("path/to/file")
+```
+
+- _All script files inside a directory_
+
+```python
+files = Utils.get_files("path/to/directory")
+for file_path in files:
+    content = t.transliterate_script(file_path)
+```
+
+- _All utterance files inside a directory_
+
+```python
+files = Utils.get_files("path/to/directory")
+for file_path in files:
+    content = t.transliterate_utterances(file_path)
 ```
 
 ## 3. GUI Mode
@@ -153,7 +182,7 @@ Use the provided GUI through `gui.py` or `main.py -g` [Underway].
 
 ![GUI Analyze Mode](./images/analyze_snap.png)
 
-- Toggle Function in Analyze mode is currently available for only Windows at the moment.
+- `Toggle` function in `Analyze mode` is currently available for only Windows at the moment.
 
 ## 4. Script Mode
 
@@ -206,3 +235,4 @@ Extra:
 ## See also
 
 - [SunValley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
+- [Loading Custom Fonts in TKinter for Windows](<https://msdn.microsoft.com/en-us/library/dd183327(VS.85).aspx>).

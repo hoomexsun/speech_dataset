@@ -1,10 +1,12 @@
 from pathlib import Path
 
+from config.lang import BN, MM, S550
+
 # -------------------------------- DATA PATHS -------------------------------- #
 DATA_ROOT = Path("data")
 
 RTF, RAW, WAV, SEG = "rtf", "raw", "wav", "seg"
-S550, BN, MM = "s550", "bn", "mm"
+
 SCP, UTT, TXT, WORDS, CHARS = "script", "utt", "txt", "words", "chars"
 
 RTF_DATA = DATA_ROOT / RTF  # Directory for s550 rtf file (file level)

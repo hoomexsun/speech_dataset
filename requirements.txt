@@ -1,6 +1,9 @@
 chardet
 pandas
+matplotlib
+pydub
 pyperclip
 striprtf
 sv-ttk
+torch
 tqdm

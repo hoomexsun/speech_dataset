@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import pyperclip
 from config.paths import *
-from utils.utils import Utils
+from utils.text import get_unicode_string, unicode_as_df
 
 
 class TestItem:
@@ -63,7 +63,7 @@ class TestItem:
         self._num_chars.set(value)
 
     def _get_unicode(self, text: str) -> str:
-        return Utils.get_unicode_string(text)
+        return get_unicode_string(text)
 
     def set_unicode_value(self, value: str) -> None:
         self._unicode.set(value)
@@ -84,7 +84,7 @@ class TestItem:
 
     def _get_unicode_info(self, text: str) -> None:
         if self.text != "":
-            df = Utils.unicode_as_df(text)
+            df = unicode_as_df(text)
             unicodes = df.loc[:, "unicode"]
             counts = df.loc[:, "count"]
             max_num = int(unicodes.count())

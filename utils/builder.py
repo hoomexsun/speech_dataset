@@ -1,8 +1,7 @@
-from pathlib import Path
-from typing import Any, Dict, List, Union
 import io
-
-from utils.utils import Utils
+from pathlib import Path
+from typing import Dict, List, Union
+from utils.file import write_markdown_file
 
 # TODO: Doesn't look good for clusters
 
@@ -55,20 +54,4 @@ class MarkdownBuilderUtils:
     @staticmethod
     def save_markdown_file(content: str, file_name: str) -> None:
         output_path = Path("output/markdowns") / file_name
-        Utils.write_markdown_file(content=content, file_path=output_path)
-
-
-# Example usage
-my_dict = {
-    "Section 1": {
-        "Subsection 1.1": [1, 2, 3],
-        "Subsection 1.2": "Some text",
-    },
-    "Section 2": "Another text",
-}
-
-markdown_content = MarkdownBuilderUtils.build_markdown_content(my_dict)
-print(markdown_content)
-
-
-MarkdownBuilderUtils.build_markdown_file(my_dict, "test_eng")
+        write_markdown_file(content=content, file_path=output_path)

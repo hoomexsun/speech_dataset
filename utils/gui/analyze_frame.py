@@ -1,8 +1,8 @@
 import tkinter as tk
 from config.paths import *
 from tkinter import ttk, font
+from utils.file import read_encoded_file
 from utils.fonts.font_loader import loadfont
-from utils.utils import Utils
 
 
 class AnalyzeFrame(ttk.Frame):
@@ -104,12 +104,12 @@ class AnalyzeFrame(ttk.Frame):
 
     # Reloads
     def reload_chars(self):
-        content = Utils.read_encoded_file(CHARS_S550_FILE)
+        content = read_encoded_file(CHARS_S550_FILE)
         chars = content.split("\n")
         self._chars = chars.copy()
 
     def reload_words(self):
-        content = Utils.read_encoded_file(WORDS_S550_FILE)
+        content = read_encoded_file(WORDS_S550_FILE)
         words = content.split("\n")
         self._words = words.copy()
         self._num_words.set(len(self._matched_words))
