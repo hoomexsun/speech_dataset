@@ -1,8 +1,7 @@
 from typing import Collection, Dict, List, Set, Tuple
 from config.paths import *
-from utils.file import get_dict_from_json
-from config.position import BEGIN, END, MID
-from config.syllabic import CODA, ONSET, NUCLEUS
+from utils.file import fget_dict
+from config.constants import BEGIN, END, MID, CODA, ONSET, NUCLEUS
 from utils.text import pct, remove_chars
 
 
@@ -16,8 +15,8 @@ class Clusters:
 
     @classmethod
     def __init_res(cls):
-        bn_to_mm_charmap = get_dict_from_json(file_path=TRANSLITERATION_DIR / B2M_FILE)
-        mm_charmap = get_dict_from_json(file_path=ALPHABET_DIR / MM_ALPHABET_FILE)
+        bn_to_mm_charmap = fget_dict(file_path=TRANSLITERATION_DIR / B2M_FILE)
+        mm_charmap = fget_dict(file_path=ALPHABET_DIR / MM_ALPHABET_FILE)
         cls.bn_cmap = bn_to_mm_charmap.get("bn_single_charmap", {})
         cls.bn_viramma_mm_apun = bn_to_mm_charmap.get("bn_viramma_mm_apun", {})
         cls.bn_viramma_mm_coda = bn_to_mm_charmap.get("bn_viramma_mm_coda", {})

@@ -11,6 +11,8 @@ class TestItem:
         self._num_chars = tk.IntVar()
         self._unicode = tk.StringVar()
 
+        self._text.trace("w", self.on_text_change)
+
         x_var, y_var = x, y
         width, info_width, count_width = 180, 700, 40
         second_part_height = 80
@@ -28,11 +30,15 @@ class TestItem:
             x=x_var + width - count_width, y=y_var + 30, width=count_width
         )
 
-        reset_btn = ttk.Button(parent, text="RESET", command=self.reset)
-        reset_btn.place(x=x, y=y_var + 30 + 30, width=width // 2)
+        self.reset_btn = ttk.Button(
+            parent, text="RESET", command=self.reset, state=tk.DISABLED
+        )
+        self.reset_btn.place(x=x, y=y_var + 30 + 30, width=width // 2)
 
-        copy_btn = ttk.Button(parent, text="COPY", command=self.copy)
-        copy_btn.place(
+        self.copy_btn = ttk.Button(
+            parent, text="COPY", command=self.copy, state=tk.DISABLED
+        )
+        self.copy_btn.place(
             x=x + width // 2,
             y=y_var + 30 + 30,
             width=width // 2,
@@ -50,6 +56,14 @@ class TestItem:
             width=info_width,
             height=second_part_height,
         )
+
+    def on_text_change(self, *args):
+        if len(self._text.get()) == 0:
+            self.reset_btn["state"] = tk.DISABLED
+            self.copy_btn["state"] = tk.DISABLED
+        else:
+            self.reset_btn["state"] = tk.NORMAL
+            self.copy_btn["state"] = tk.NORMAL
 
     @property
     def text(self) -> str:

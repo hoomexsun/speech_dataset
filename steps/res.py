@@ -1,6 +1,6 @@
 from config.project import Project
 from config.paths import *
-from utils.file import write_json_file
+from utils.file import fwrite_json
 from utils.resource_bank import *
 
 
@@ -35,8 +35,8 @@ class Correction_resource(Project):
             "bn_suffix_char_v": bn_suffix_char_v,
         }
 
-        write_json_file(data=chars_to_replace, file_path=self.res_dir / SNB_FILE)
-        write_json_file(data=position_to_fix, file_path=self.res_dir / FPOS_FILE)
+        fwrite_json(data=chars_to_replace, file_path=self.res_dir / SNB_FILE)
+        fwrite_json(data=position_to_fix, file_path=self.res_dir / FPOS_FILE)
 
 
 class Transliteration_resource(Project):
@@ -63,7 +63,7 @@ class Transliteration_resource(Project):
             "mm_e_lonsum_coda": mm_e_lonsum_coda,
         }
 
-        write_json_file(data=bn_to_mm_charmap, file_path=self.res_dir / B2M_FILE)
+        fwrite_json(data=bn_to_mm_charmap, file_path=self.res_dir / B2M_FILE)
 
 
 class Alphabet_resource(Project):
@@ -81,7 +81,7 @@ class Alphabet_resource(Project):
             "mm_cheising": mm_cheising,
             "mm_khudam": mm_khudam,
         }
-        write_json_file(data=mm_charmap, file_path=MM_ALPHABET_FILE)
+        fwrite_json(data=mm_charmap, file_path=MM_ALPHABET_FILE)
 
 
 def init_resources():

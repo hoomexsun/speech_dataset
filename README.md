@@ -22,7 +22,7 @@ The project consists of several modules:
 
 Import the necessary classes and use functions from utils for computation. Here's an example of reading a text file:
 
-- _Using Utils as a utility class (since most methods are static):_
+- _Using functions from utils:_
 
 ```python
 from utils.file import read_text_file
@@ -180,7 +180,9 @@ You can use the script mode for different functions:
 ```bash
 main.py
 gui.py
+main.py -g
 describe.py
+main.py -d
 audio_preparation.py
 correction.py string
 correction.py -f path/to/file

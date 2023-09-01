@@ -1,18 +1,31 @@
 import tkinter as tk
-from config.paths import *
+from typing import Dict, List, Tuple
 from tkinter import ttk, font
 from utils.file import fread
 from utils.fonts.font_loader import loadfont
+from collections import defaultdict
 
 
-class AnalyzeFrame(ttk.Frame):
-    def __init__(self, parent: tk.Misc | None, width: int = 1280, height: int = 720):
+# TODO: Make a Frame to find cluster containing a character or a group of character.
+# TODO: Also arrange the clusters with number of occurence and a copy button.
+# TODO: Add for all three character sets.o
+class ClusterFrame(ttk.Frame):
+    def __init__(
+        self,
+        parent: tk.Misc | None,
+        words: List[str],
+        chars: List[str],
+        width: int = 1280,
+        height: int = 720,
+    ):
         super().__init__(parent)
+        self.words = words
+        self.chars = chars
         self.width = width
         self.height = height
         self.__init_variables()
         input_frame_width = 500
-        output_frame_width = width - input_frame_width
+        output_frame_width = self.width - input_frame_width
         self.add_input_components(x=0, y=0, width=input_frame_width, height=self.height)
         self.add_output_components(
             x=input_frame_width, y=0, width=output_frame_width, height=self.height
@@ -30,11 +43,8 @@ class AnalyzeFrame(ttk.Frame):
         self._chars: list = []
         self._words: list = []
         self._matched_words: list = []
-        self._num_matches = tk.IntVar()
-        self._num_words = tk.IntVar()
+        self._num_combination = tk.IntVar()
         self._search_results = tk.StringVar(value=f"Start searching...")
-        self.reload_chars()
-        self.reload_words()
 
     def add_input_components(self, x, y, width=500, height=720):
         self.input_frame = ttk.LabelFrame(self, text="Search words with character")
@@ -97,22 +107,42 @@ class AnalyzeFrame(ttk.Frame):
         ].copy()
         self._current_page = 0  # Reset to the first page
         self.reload_matched_words()
-        self._num_matches.set(len(self._matched_words))
+        self._num_combination.set(len(self._matched_words))
         self._search_results.set(
-            f"Found {self._num_matches.get()} words out of {len(self._words)}."
+            f"Found {self._num_combination.get()} words out of {len(self._words)}."
         )
 
-    # Reloads
-    def reload_chars(self):
-        content = fread(CHARS_S550_FILE)
-        chars = content.split("\n")
-        self._chars = chars.copy()
+    def reload_matches(
+        self, target: str
+    ) -> Tuple[
+        int, int, int, Dict[str, int], Dict[str, int], Dict[Tuple[str, str], int]
+    ]:
+        matched_words = [word for word in self.words if target in word]
+        num_matches = len(matched_words)
 
-    def reload_words(self):
-        content = fread(WORDS_S550_FILE)
-        words = content.split("\n")
-        self._words = words.copy()
-        self._num_words.set(len(self._matched_words))
+        with_prefix: Dict[str, int] = defaultdict(int)
+        with_suffix: Dict[str, int] = defaultdict(int)
+        with_both: Dict[Tuple[str, str], int] = defaultdict(int)
+
+        for word in matched_words:
+            for i in range(len(word) - len(target) + 1):
+                if word[i : i + len(target)] == target:
+                    prefix = word[i - 1 : i] if i > 0 else ""
+                    suffix = (
+                        word[i + len(target) : i + len(target) + 1]
+                        if i + len(target) < len(word)
+                        else ""
+                    )
+
+                    with_prefix[prefix] += bool(prefix)
+                    with_suffix[suffix] += bool(suffix)
+                    with_both[(prefix, suffix)] += bool(prefix and suffix)
+
+        at_begin: int = sum(1 for word in matched_words if word.startswith(target))
+        at_end: int = sum(1 for word in matched_words if word.endswith(target))
+        at_middle: int = sum(1 for word in matched_words if target in word[1:-1])
+
+        return at_begin, at_end, at_middle, with_prefix, with_suffix, with_both
 
     def reload_matched_words(self):
         start_idx = self._current_page * self._items_per_page

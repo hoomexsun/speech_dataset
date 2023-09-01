@@ -6,35 +6,39 @@ import json
 import csv
 from tqdm import tqdm
 from config.paths import RAW_DATA, RTF_DATA
-from utils.text import get_unicode_string
+from utils.text import get_unicode_string, split_id_and_utt
 
 
-def get_files(dir: Path, extension: str = "txt") -> List[Path]:
+def fget(dir: Path, extension: str = "txt") -> List[Path]:
     return list(dir.glob(f"*.{extension.lower()}"))
 
 
-def get_dict_from_json(file_path: Path) -> Dict:
-    """Load data from a JSON file and return it as a dictionary.
-
-    Args:
-        file_path (Path): Path to the JSON file.
-
-    Returns:
-        Dict: Loaded data as a dictionary.
-    """
-    json_data = read_encoded_file(file_path=file_path.with_suffix(".json"))
-    return json.loads(json_data)
+def fpath_unicode(file_path: Path) -> Path:
+    file_name = file_path.stem + "_utf"
+    return file_path.parent / file_name
 
 
-def get_text_from_rtf(file_path: Path) -> str:
-    """Extract plain text from an RTF file.
+def change_path(file_path: Path, dir: Path, extension: str = "txt") -> Path:
+    return dir / f"{file_path.stem}.{extension}"
 
-    Args:
-        file_path (Path): Path to the RTF file.
 
-    Returns:
-        str: Plain text extracted from the RTF file.
-    """
+def fget_items(file_path: Path) -> Dict | List[str]:
+    if file_path.suffix.lower() == ".json":
+        return fget_dict(file_path)
+    else:
+        return fget_list(file_path)
+
+
+def fget_dict(file_path: Path) -> Dict:
+    return json.loads(fread(file_path=file_path.with_suffix(".json")))
+
+
+def fget_list(file_path: Path) -> List[str]:
+    return fread(file_path=file_path).split("\n")
+
+
+#! EXPERIMENTAL
+def fget_rtf_text(file_path: Path) -> str:
     with open(file_path, "rb") as rtf_file:
         rtf_data = rtf_file.read()
         try:
@@ -54,12 +58,11 @@ def get_text_from_rtf(file_path: Path) -> str:
     return plain_text
 
 
-def modify_unicode_file_path(file_path: Path) -> Path:
-    file_name = file_path.stem + "_utf"
-    return file_path.parent / file_name
+def fread(file_path: Path) -> str:
+    return file_path.read_text(encoding="utf-8")
 
 
-def write_text_file(
+def fwrite_text(
     content: str,
     file_path: Path,
     exist_ok: bool = True,
@@ -68,46 +71,36 @@ def write_text_file(
 ) -> None:
     if unicode:
         content = get_unicode_string(content, skip_newline)
-        file_path = modify_unicode_file_path(file_path)
-    write_encoded_file(
-        content=content, file_path=file_path.with_suffix(".txt"), exist_ok=exist_ok
-    )
+        file_path = fpath_unicode(file_path)
+    fwrite(content=content, file_path=file_path.with_suffix(".txt"), exist_ok=exist_ok)
 
 
-def write_markdown_file(content: str, file_path: Path) -> None:
-    write_encoded_file(content=content, file_path=file_path.with_suffix(".md"))
+def fwrite_md(content: str, file_path: Path) -> None:
+    fwrite(content=content, file_path=file_path.with_suffix(".md"))
 
 
-def write_json_file(data: Dict, file_path: Path, unicode: bool = False) -> None:
+def fwrite_json(data: Dict, file_path: Path, unicode: bool = False) -> None:
     if unicode:
         json_data = json.dumps(data)
-        file_path = modify_unicode_file_path(file_path)
+        file_path = fpath_unicode(file_path)
     else:
         json_data = json.dumps(data, ensure_ascii=False)
-    write_encoded_file(content=json_data, file_path=file_path.with_suffix(".json"))
+    fwrite(content=json_data, file_path=file_path.with_suffix(".json"))
 
 
-def write_csv_file(data: Dict, fieldnames: Tuple, file_path: Path) -> None:
-    file_path = file_path.with_suffix(".csv")
-    with open(file_path, mode="w", encoding="utf-8", newline="") as csv_file:
+def fwrite_csv(data: Dict, fieldnames: Tuple, file_path: Path) -> None:
+    with open(
+        file_path.with_suffix(".csv"), mode="w", encoding="utf-8", newline=""
+    ) as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         for word_bn, word_mm in data.items():
             writer.writerow({fieldnames[0]: word_bn, fieldnames[1]: word_mm})
 
 
-def read_encoded_file(file_path: Path) -> str:
-    return file_path.read_text(encoding="utf-8")
-
-
-def write_encoded_file(content: str, file_path: Path, exist_ok: bool = True) -> None:
+def fwrite(content: str, file_path: Path, exist_ok: bool = True) -> None:
     file_path.parent.mkdir(parents=True, exist_ok=exist_ok)
     file_path.write_text(data=content, encoding="utf-8")
-
-
-# Path Modifier
-def change_path(file_path: Path, dir: Path, extension: str = "txt"):
-    return dir / f"{file_path.stem}.{extension}"
 
 
 # Audio File
@@ -141,9 +134,9 @@ def create_segment_folder(
 # ! This will overwrite existing files, take care!!!
 @staticmethod
 def create_raw_folder():
-    files = get_files(dir=RTF_DATA, extension="rtf")
+    files = fget(dir=RTF_DATA, extension="rtf")
     for file_path in files:
-        write_text_file(
+        fwrite_text(
             content="",
             file_path=change_path(file_path=file_path, dir=RAW_DATA),
             exist_ok=False,
@@ -151,7 +144,7 @@ def create_raw_folder():
 
 
 # Utterance Utility Functions
-def build_utt_id(file_path: Path, idx: int) -> str:
+def fbuild_id(file_path: Path, idx: int) -> str:
     utt_id = file_path.name.split(".")[0]
     if idx < 9:  # idx starts from 0
         utt_id = f"{utt_id}00{idx+1}"
@@ -162,22 +155,11 @@ def build_utt_id(file_path: Path, idx: int) -> str:
     return utt_id
 
 
-def get_utt_ids_from_text(file_path: Path) -> List[str]:
-    utt_ids, _ = split_id_and_utt(file_path=file_path)
+def fget_ids(file_path: Path) -> List[str]:
+    utt_ids, _ = split_id_and_utt(content=fread(file_path=file_path))
     return utt_ids
 
 
-def get_utterances_from_text(file_path: Path) -> str:
-    _, utterances = split_id_and_utt(file_path=file_path)
+def fget_utterances(file_path: Path) -> str:
+    _, utterances = split_id_and_utt(content=fread(file_path=file_path))
     return "\n".join(utterances)
-
-
-def split_id_and_utt(file_path: Path) -> Tuple[List, List]:
-    temp = read_encoded_file(file_path=file_path)
-    lines = temp.split("\n")
-    utt_ids, utterances = [], []
-    for line in lines:
-        utt_id, *utterance = line.split("\t")
-        utt_ids.append(utt_id)
-        utterances.extend(utterance)
-    return utt_ids, utterances

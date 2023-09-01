@@ -1,7 +1,6 @@
-from config.log import setup_logger
+from config.project import setup_logger
 from pathlib import Path
 from pydub import AudioSegment
-import shutil
 from typing import List
 from tqdm import tqdm
 

@@ -37,5 +37,6 @@ output
 
 # Backup Python files
 *_backup.py
-
+*.zip
 test.py
+

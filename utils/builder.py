@@ -1,7 +1,7 @@
 import io
 from pathlib import Path
 from typing import Dict, List, Union
-from utils.file import write_markdown_file
+from utils.file import fwrite_md
 
 # TODO: Doesn't look good for clusters
 
@@ -54,4 +54,4 @@ class MarkdownBuilderUtils:
     @staticmethod
     def save_markdown_file(content: str, file_name: str) -> None:
         output_path = Path("output/markdowns") / file_name
-        write_markdown_file(content=content, file_path=output_path)
+        fwrite_md(content=content, file_path=output_path)

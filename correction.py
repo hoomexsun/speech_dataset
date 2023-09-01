@@ -1,9 +1,9 @@
+import argparse
 from pathlib import Path
 from typing import List, Tuple
 from config.paths import *
-from config.project import Project
-from utils.display import display_line
-from utils.file import get_dict_from_json, read_encoded_file
+from config.project import Project, process_directory
+from utils.file import fget_dict, fread
 from utils.text import (
     fix_mistypes,
     remove_chars,
@@ -25,8 +25,8 @@ class Correction(Project):
         self.virama = "\u09cd"
 
     def __init_res(self):
-        chars_to_replace = get_dict_from_json(file_path=self.res_dir / SNB_FILE)
-        position_to_fix = get_dict_from_json(file_path=self.res_dir / FPOS_FILE)
+        chars_to_replace = fget_dict(file_path=self.res_dir / SNB_FILE)
+        position_to_fix = fget_dict(file_path=self.res_dir / FPOS_FILE)
         self.s550_single_charmap = chars_to_replace.get("s550_single_charmap", {})
         self.s550_double_charmap = chars_to_replace.get("s550_double_charmap", {})
         self.s550_triple_charmap = chars_to_replace.get("s550_triple_charmap", {})
@@ -44,12 +44,10 @@ class Correction(Project):
 
     # Public methods
     def correct_script(self, file_path: Path) -> str:
-        return self.correct(read_encoded_file(file_path=file_path))
+        return self.correct(fread(file_path=file_path))
 
-    def correct_utterances(
-        self, file_path: Path, idx: int = -1, is_utt: bool = False
-    ) -> str:
-        utterances_dict = utt_content_to_dict(read_encoded_file(file_path))
+    def correct_utterances(self, file_path: Path) -> str:
+        utterances_dict = utt_content_to_dict(fread(file_path))
         return utt_dict_to_content(
             {utt_id: self.correct(utt) for utt_id, utt in utterances_dict.items()}
         )
@@ -81,8 +79,6 @@ class Correction(Project):
 
         # Returns final content
         return content
-
-    # Extra Public methods
 
     # Private methods
     def __remove_insignificant_chars(self, data: str) -> str:
@@ -247,3 +243,30 @@ class Correction(Project):
             next_index_after_letter,
             False,
         )
+
+
+# -------------------------------- SCRIPT MODE -------------------------------- #
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Converts s-550 glyphs into correct Bengali Unicode characters."
+    )
+
+    parser.add_argument("input_string", type=str, help="Input string to correct.")
+    c = Correction()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "-f", "--file", action="store_true", help="Input is a file name."
+    )
+    group.add_argument("-d", "--dir", action="store_true", help="Input is a directory.")
+    args = parser.parse_args()
+
+    if args.file:
+        c.correct_script(file_path=Path(args.input_string))
+    elif args.dir:
+        directory_path = Path(args.input_string)
+        if directory_path.is_dir():
+            process_directory(c.correct_script, directory_path)
+        else:
+            print(f"{directory_path} is not a valid directory.")
+    else:
+        print(c.correct(args.input_string))

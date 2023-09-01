@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 from config.project import Project
-from utils.file import get_text_from_rtf, read_encoded_file
+from utils.file import fget_rtf_text, fread
 
 
 class Preprocessing(Project):
@@ -23,9 +23,9 @@ class Preprocessing(Project):
     # Public methods
     def preprocess_file(self, file_path: Path, idx: int = -1) -> str:
         if file_path.suffix == ".rtf":
-            return self.preprocess(get_text_from_rtf(file_path=file_path))
+            return self.preprocess(fget_rtf_text(file_path=file_path))
         elif file_path.suffix == ".txt":
-            return self.preprocess(read_encoded_file(file_path=file_path))
+            return self.preprocess(fread(file_path=file_path))
         else:
             return "Unsupported file type"
 

@@ -1,11 +1,11 @@
 from pathlib import Path
-from config.log import format_msg
-from utils.file import read_encoded_file
+from config.project import format_msg
+from utils.file import fread
 from utils.text import get_unicode_string, unicode_as_df
 
 
 def display_unicode_counts_in_file(file_path: Path):
-    data = read_encoded_file(file_path)
+    data = fread(file_path)
     df = unicode_as_df(content=data)
     print(df)
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List
 from config.project import Project
-from utils.file import build_utt_id, read_encoded_file
+from utils.file import fbuild_id, fread
 from utils.text import clean_s550_data, utt_dict_to_content
 
 
@@ -31,7 +31,7 @@ class Utterance(Project):
     def utterance(self, file_path: Path) -> str:
         # Step 1: Build Utterance Dictionary with utterances and corresponding ids
         utterances = self.__init_utts(
-            input_data=read_encoded_file(file_path=file_path),
+            input_data=fread(file_path=file_path),
             file_path=file_path,
         )
 
@@ -44,7 +44,7 @@ class Utterance(Project):
     # Private methods
     def __init_utts(self, input_data: str, file_path: Path) -> Dict:
         return {
-            build_utt_id(file_path=file_path, idx=idx): utt
+            fbuild_id(file_path=file_path, idx=idx): utt
             for idx, utt in enumerate(self.__get_utt_rows(content=input_data))
         }
 

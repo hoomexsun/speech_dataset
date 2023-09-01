@@ -4,18 +4,19 @@ from typing import Collection, Dict, List
 from matplotlib import pyplot as plt
 import pandas as pd
 from config.paths import RAW_DATA, WAV_DATA
-from utils.file import get_files
+from config.project import speaker_dict, time_dict, month_dict, year_dict
+from utils.file import fget
 from utils.text import pct
 
 
-def main():
-    audios = {audio.stem for audio in get_files(WAV_DATA, extension="txt")}
-    scripts = {script.stem for script in get_files(RAW_DATA, extension="txt")}
+def describe():
+    audios = {audio.stem for audio in fget(WAV_DATA, extension="txt")}
+    scripts = {script.stem for script in fget(RAW_DATA, extension="txt")}
 
     print_stage_status(audios, desc="audio file")
     print_stage_status(scripts, desc="script file")
 
-    describe([script[:12] for script in scripts])
+    generate([script[:12] for script in scripts])
 
 
 def print_stage_status(data_list: Collection[str], desc: str = "file") -> None:
@@ -45,7 +46,7 @@ def print_stage_status(data_list: Collection[str], desc: str = "file") -> None:
         )
 
 
-def describe(scripts: Collection[str]) -> None:
+def generate(scripts: Collection[str]) -> None:
     script_info_df = build_file_and_speaker_info(list(scripts))
     os.makedirs("generated", exist_ok=True)
     script_info_df.to_csv("generated/script_info.csv", index=False)
@@ -126,33 +127,4 @@ def plot_dataset_speakers(file_info_df: pd.DataFrame) -> None:
 
 
 if __name__ == "__main__":
-    speaker_dict = {
-        "001": "RK Gorani",
-        "002": "Maibam Dwijamani",
-        "003": "Ngangbam Nganthoi",
-        "004": "Ngangom Kiran",
-        "005": "Nayeni Devi",
-        "006": "Wahengbam Rajesh",
-        "007": "Nolini Devi",
-        "008": "Wahengbam Washington",
-        "009": "Kshetrimayum Chitrabhanu",
-        "011": "Ningthoukhongjam Suni",
-        "013": "Moirangthem Ibeyaibi",
-    }
-    month_dict = {
-        "01": "Jan",
-        "02": "Feb",
-        "03": "Mar",
-        "04": "Apr",
-        "05": "May",
-        "06": "Jun",
-        "07": "Jul",
-        "08": "Aug",
-        "09": "Sep",
-        "10": "Oct",
-        "11": "Nov",
-        "12": "Dec",
-    }
-    time_dict = {"00": "0730", "01": "1200", "02": "1930"}
-    year_dict = {"20": "2020", "21": "2021"}
-    main()
+    describe()

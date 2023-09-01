@@ -1,5 +1,5 @@
 import io
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import pandas as pd
 
 
@@ -112,6 +112,10 @@ def unicode_as_df(content: str) -> pd.DataFrame:
 
 
 # Utterance Utility Functions
+def looks_like_utt(content: str) -> bool:
+    return True
+
+
 def utt_lists_to_content(utt_ids: List[str], utterances: List[str]) -> str:
     return "".join(f"{utt_id}\t{utt}\n" for utt_id, utt in zip(utt_ids, utterances))
 
@@ -134,3 +138,13 @@ def utt_content_to_dict(content: str) -> Dict[str, str]:
         utt_ids.append(utt_id)
         utterances.extend(utterance)
     return utt_lists_to_dict(utt_ids, utterances)
+
+
+def split_id_and_utt(content: str) -> Tuple[List, List]:
+    lines = content.split("\n")
+    utt_ids, utterances = [], []
+    for line in lines:
+        utt_id, *utterance = line.split("\t")
+        utt_ids.append(utt_id)
+        utterances.extend(utterance)
+    return utt_ids, utterances

@@ -1,9 +1,7 @@
 from pathlib import Path
-from typing import Callable, Dict, List
-
-from tqdm import tqdm
+from typing import Dict, List
+from config.constants import Language
 from config.paths import (
-    BN,
     CHARS_BN_FILE,
     CHARS_MM_FILE,
     CHARS_S550_FILE,
@@ -12,10 +10,7 @@ from config.paths import (
     CLUSTERS_FILE,
     CLUSTERS_MAP_FILE,
     CLUSTERS_PCT_FILE,
-    MM,
     RAW_DATA,
-    RTF_DATA,
-    S550,
     SCP_BN_DIR,
     SCP_MM_DIR,
     SCP_S550_DIR,
@@ -30,7 +25,7 @@ from config.paths import (
     WORDS_MM_FILE,
     WORDS_S550_FILE,
 )
-from config.project import Project
+from config.project import Project, process_directory
 from correction import Correction
 from steps.preprocessing import Preprocessing
 from steps.res import init_resources
@@ -40,15 +35,13 @@ from steps.utterance import Utterance
 from utils.builder import MarkdownBuilderUtils
 from utils.display import display_line
 from utils.file import (
-    change_path,
-    get_files,
-    get_utterances_from_text,
-    read_encoded_file,
-    write_csv_file,
-    write_json_file,
-    write_text_file,
+    fread,
+    fwrite_csv,
+    fwrite_json,
+    fwrite_text,
+    fget_utterances,
 )
-from utils.text import utt_content_to_dict, utt_dict_to_content
+from utils.text import utt_dict_to_content
 
 
 class DatasetProject(Project):
@@ -58,7 +51,7 @@ class DatasetProject(Project):
         self.__init_classes()
         self.__init_vars()
 
-    def __init_classes(self, num_files: int = 0) -> None:
+    def __init_classes(self) -> None:
         self.p = Preprocessing()
         self.u = Utterance()
         self.c = Correction()
@@ -69,32 +62,22 @@ class DatasetProject(Project):
         self.bn_utts = dict()
         self.mm_utts = dict()
 
-    # TODO: Restructure progress bar using tqdm DONE
-    # TODO: Move every basic steps to LOG style formatting
-    # TODO: Divide the different major steps into different functions. Use self for shared variable.
-    def run(self, rtf: bool = False):
-        if rtf:
-            files = get_files(dir=RTF_DATA, extension="rtf")
-        else:
-            files = get_files(dir=RAW_DATA)
-
-        self.__init_classes(len(files))
-
+    def run(self):
         # Step 0: Preprocessing [NEW]
-        self.from_dir(
-            dir=RAW_DATA,
-            desc="Preprocessing Files",
+        process_directory(
             func=self.p.preprocess_file,
+            dir=RAW_DATA,
             output_dir=SCP_S550_DIR,
+            desc="Preprocessing Files",
         )
 
         # Step 1: Utterances [NEW]
-        self.s550_utts = self.from_dir(
-            dir=SCP_S550_DIR,
-            desc="Building Utterances",
+        self.s550_utts = process_directory(
             func=self.u.utterance,
+            dir=SCP_S550_DIR,
             output_dir=UTT_S550_DIR,
-            content_as_dict=True,
+            desc="Building Utterances",
+            return_dict=True,
         )
 
         # Step 1.1: Write s550 text
@@ -103,114 +86,88 @@ class DatasetProject(Project):
             target=TEXT_S550_FILE.as_posix(),
             desc="saving utterance file",
         )
-        write_text_file(
+        fwrite_text(
             content=utt_dict_to_content(self.s550_utts), file_path=TEXT_S550_FILE
         )
 
-        # prep
-        utterances = get_utterances_from_text(file_path=TEXT_S550_FILE)
         # Step 1.2: Write s550 words
-        self.save_words_file(content=utterances, file_path=WORDS_S550_FILE)
+        self.save_words_file(utt_path=TEXT_S550_FILE, file_path=WORDS_S550_FILE)
         # Step 1.3: Write s550 chars
         self.save_chars_file(
-            content=utterances, file_path=CHARS_S550_FILE, avoid_utf=False
+            utt_path=TEXT_S550_FILE, file_path=CHARS_S550_FILE, utf=True
         )
 
         # Step 2: Correction
         # Step 2.0.1: Correction of Scripts
         # Step 2.0.1: Correction of Scripts [NEW]
-        self.from_dir(
-            dir=SCP_S550_DIR,
-            desc="Correcting Scripts",
+        process_directory(
             func=self.c.correct_script,
+            dir=SCP_S550_DIR,
             output_dir=SCP_BN_DIR,
+            desc="Correcting Scripts",
         )
 
         # Step 2.0.2: Correction of Utterances [NEW]
-        self.bn_utts = self.from_dir(
-            dir=UTT_S550_DIR,
-            desc="Correcting Utterances",
+        self.bn_utts = process_directory(
             func=self.c.correct_utterances,
+            dir=UTT_S550_DIR,
             output_dir=UTT_BN_DIR,
-            content_as_dict=True,
+            desc="Correcting Utterances",
+            return_dict=True,
         )
 
         # Step 2.1: Write bn text
         self.save_utterance_file(utt_dict=self.bn_utts, file_path=TEXT_BN_FILE)
 
-        # Prep
-        utterances = get_utterances_from_text(file_path=TEXT_BN_FILE)
         # Step 2.2: Write bn words
-        self.save_words_file(content=utterances, file_path=WORDS_BN_FILE)
+        self.save_words_file(utt_path=TEXT_BN_FILE, file_path=WORDS_BN_FILE)
         # Step 2.3: Write bn chars
-        self.save_chars_file(
-            content=utterances, file_path=CHARS_BN_FILE, avoid_utf=False
-        )
+        self.save_chars_file(utt_path=TEXT_BN_FILE, file_path=CHARS_BN_FILE, utf=True)
 
         # Step 3: Transliteration
         # Step 3.0.1: Transliteration of Scripts [NEW]
-        self.from_dir(
-            dir=SCP_BN_DIR,
-            desc="Transliterating Scripts",
+        process_directory(
             func=self.t.transliterate_script,
+            dir=SCP_BN_DIR,
             output_dir=SCP_MM_DIR,
+            desc="Transliterating Scripts",
         )
 
         # Step 3.0.2: Transliteration of Utterances [NEW]
-        self.mm_utts = self.from_dir(
-            dir=UTT_BN_DIR,
-            desc="Transliterating Utterances",
+        self.mm_utts = process_directory(
             func=self.t.transliterate_utterances,
+            desc="Transliterating Utterances",
+            dir=UTT_BN_DIR,
             output_dir=UTT_MM_DIR,
-            content_as_dict=True,
+            return_dict=True,
         )
 
         # Step 3.1: Write mm text
         self.save_utterance_file(utt_dict=self.mm_utts, file_path=TEXT_MM_FILE)
-
-        # Prep
-        utterances = get_utterances_from_text(file_path=TEXT_MM_FILE)
         # Step 3.2: Write mm words
-        self.save_words_file(content=utterances, file_path=WORDS_MM_FILE)
+        self.save_words_file(utt_path=TEXT_MM_FILE, file_path=WORDS_MM_FILE)
         # Step 3.3: Write mm chars
-        self.save_chars_file(
-            content=utterances, file_path=CHARS_MM_FILE, avoid_utf=False
-        )
+        self.save_chars_file(utt_path=TEXT_MM_FILE, file_path=CHARS_MM_FILE, utf=True)
 
         # Step 4: Extra
         # Step 4.1: Generate WordMap
         # Step 4.1.1: Generate S550_BN WordMap
         self.generate_wordmap(
-            file_path=WORDS_S550_FILE, fun=self.c.correct, lang1=S550, lang2=BN
+            file_path=WORDS_S550_FILE,
+            fun=self.c.correct,
+            lang1=Language.S550.value,
+            lang2=Language.BN.value,
         )
         # Step 4.1.2: Generate BN_MM WordMap
         self.generate_wordmap(
-            file_path=WORDS_BN_FILE, fun=self.t.transliterate, lang1=BN, lang2=MM
+            file_path=WORDS_BN_FILE,
+            fun=self.t.transliterate,
+            lang1=Language.BN.value,
+            lang2=Language.MM.value,
         )
         # Step 4.2 Generate Clusters Info
-        bn_words = read_encoded_file(file_path=WORDS_BN_FILE).split("\n")
+        bn_words = fread(file_path=WORDS_BN_FILE).split("\n")
         self.generate_clusters_info(bn_words=bn_words)
-
-    # Run files
-    def from_dir(
-        self,
-        dir: Path,
-        desc: str,
-        func: Callable,
-        output_dir: Path,
-        content_as_dict: bool = False,
-    ):
-        content_dict = {}
-        files = get_files(dir=dir, extension="txt")
-        for file_path in tqdm(files, total=len(files), desc=desc):
-            content = func(file_path=file_path)
-            write_text_file(
-                content=content,
-                file_path=change_path(file_path=file_path, dir=output_dir),
-            )
-            if content_as_dict:
-                content_dict.update(utt_content_to_dict(content))
-        return content_dict
 
     @staticmethod
     def save_utterance_file(utt_dict: Dict, file_path: Path) -> None:
@@ -219,39 +176,43 @@ class DatasetProject(Project):
             target=file_path.as_posix(),
             desc="saving utterance file",
         )
-        write_text_file(content=utt_dict_to_content(utt_dict), file_path=file_path)
+        fwrite_text(content=utt_dict_to_content(utt_dict), file_path=file_path)
 
     @staticmethod
-    def save_words_file(content: str, file_path: Path, avoid_utf: bool = True) -> None:
+    def save_words_file(
+        utt_path: Path, file_path: Path, avoid_utf: bool = True
+    ) -> None:
+        content = fget_utterances(file_path=utt_path)
         words = "\n".join(sorted(set(content.split())))
         display_line(
             title="Words", target=file_path.as_posix(), desc="saving words file"
         )
-        write_text_file(content=words, file_path=file_path)
+        fwrite_text(content=words, file_path=file_path)
         if not avoid_utf:
-            write_text_file(content=words, file_path=file_path, unicode=True)
+            fwrite_text(content=words, file_path=file_path, unicode=True)
 
     @staticmethod
-    def save_chars_file(content: str, file_path: Path, avoid_utf: bool = True) -> None:
+    def save_chars_file(utt_path: Path, file_path: Path, utf: bool = False) -> None:
+        content = fget_utterances(file_path=utt_path)
         chars = "\n".join(sorted(set(content)))
         display_line(
             title="Characters",
             target=file_path.as_posix(),
             desc="saving characters file",
         )
-        write_text_file(content=chars, file_path=file_path)
-        if not avoid_utf:
-            write_text_file(
+        fwrite_text(content=chars, file_path=file_path)
+        if utf:
+            fwrite_text(
                 content=chars, file_path=file_path, unicode=True, skip_newline=True
             )
 
     @staticmethod
     def generate_wordmap(file_path: Path, fun, lang1: str, lang2: str):
-        content = read_encoded_file(file_path)
+        content = fread(file_path)
         wmap = {word: fun(word) for word in content.split("\n")}
         output_filename = f"{lang1}_{lang2}"
-        write_json_file(data=wmap, file_path=WORD_MAP_DIR / output_filename)
-        write_csv_file(
+        fwrite_json(data=wmap, file_path=WORD_MAP_DIR / output_filename)
+        fwrite_csv(
             data=wmap,
             fieldnames=(lang1, lang2),
             file_path=WORD_MAP_DIR / output_filename,
@@ -267,7 +228,7 @@ class DatasetProject(Project):
             target=CLUSTERS_FILE.as_posix(),
             desc="writing-clusters-file",
         )
-        write_text_file(content="\n".join(clusters), file_path=CLUSTERS_FILE)  # type: ignore
+        fwrite_text(content="\n".join(clusters), file_path=CLUSTERS_FILE)  # type: ignore
 
         # Step 4.2.2: Build clusters with examples
         clusters_egs = Clusters.build_egs(
@@ -278,8 +239,8 @@ class DatasetProject(Project):
             target=CLUSTERS_EGS_FILE.as_posix(),
             desc="writing-clusters-examples-file",
         )
-        write_json_file(data=clusters_egs, file_path=CLUSTERS_EGS_FILE)
-        write_json_file(data=clusters_egs, file_path=CLUSTERS_EGS_FILE, unicode=True)
+        fwrite_json(data=clusters_egs, file_path=CLUSTERS_EGS_FILE)
+        fwrite_json(data=clusters_egs, file_path=CLUSTERS_EGS_FILE, unicode=True)
 
         MarkdownBuilderUtils.build_markdown_file(
             d=clusters_egs, file_name=CLUSTERS_EGS_FILE.stem  # type: ignore
@@ -292,8 +253,8 @@ class DatasetProject(Project):
             target=CLUSTERS_MAP_FILE.as_posix(),
             desc="writing-clusters-map-file",
         )
-        write_json_file(data=clusters_map, file_path=CLUSTERS_MAP_FILE)
-        write_json_file(data=clusters_map, file_path=CLUSTERS_MAP_FILE, unicode=True)
+        fwrite_json(data=clusters_map, file_path=CLUSTERS_MAP_FILE)
+        fwrite_json(data=clusters_map, file_path=CLUSTERS_MAP_FILE, unicode=True)
         MarkdownBuilderUtils.build_markdown_file(
             d=clusters_map, file_name=CLUSTERS_MAP_FILE.stem  # type: ignore
         )
@@ -307,14 +268,14 @@ class DatasetProject(Project):
             target=CLUSTERS_DETAILED_FILE.as_posix(),
             desc="writing-clusters-detailed-file",
         )
-        write_json_file(data=clusters_detailed, file_path=CLUSTERS_DETAILED_FILE)
-        write_json_file(
+        fwrite_json(data=clusters_detailed, file_path=CLUSTERS_DETAILED_FILE)
+        fwrite_json(
             data=clusters_detailed,
             file_path=CLUSTERS_DETAILED_FILE,
             unicode=True,
         )
-        write_json_file(data=clusters_pct, file_path=CLUSTERS_PCT_FILE)
-        write_json_file(data=clusters_pct, file_path=CLUSTERS_PCT_FILE, unicode=True)
+        fwrite_json(data=clusters_pct, file_path=CLUSTERS_PCT_FILE)
+        fwrite_json(data=clusters_pct, file_path=CLUSTERS_PCT_FILE, unicode=True)
         MarkdownBuilderUtils.build_markdown_file(
             d=clusters_pct, file_name=CLUSTERS_PCT_FILE.stem
         )

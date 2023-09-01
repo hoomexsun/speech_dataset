@@ -1,6 +1,7 @@
+import argparse
 from config.paths import *
-from config.project import Project
-from utils.file import get_dict_from_json, read_encoded_file
+from config.project import Project, process_directory
+from utils.file import fget, fget_dict, fread
 from utils.text import (
     replace_chars,
     replace_two_chars,
@@ -21,8 +22,8 @@ class Transliteration(Project):
         self.virama = "\u09cd"
 
     def __init_res(self):
-        b2m_charmap = get_dict_from_json(file_path=self.res_dir / B2M_FILE)
-        mm_charmap = get_dict_from_json(file_path=MM_ALPHABET_FILE)
+        b2m_charmap = fget_dict(file_path=self.res_dir / B2M_FILE)
+        mm_charmap = fget_dict(file_path=MM_ALPHABET_FILE)
         self.bn_single_charmap = b2m_charmap.get("bn_single_charmap", {})
         self.bn_viramma_mm_apun = b2m_charmap.get("bn_viramma_mm_apun", {})
         self.bn_viramma_mm_coda = b2m_charmap.get("bn_viramma_mm_coda", {})
@@ -38,10 +39,10 @@ class Transliteration(Project):
 
     # Public methods
     def transliterate_script(self, file_path: Path) -> str:
-        return self.transliterate(read_encoded_file(file_path=file_path))
+        return self.transliterate(fread(file_path=file_path))
 
     def transliterate_utterances(self, file_path: Path) -> str:
-        utterances_dict = utt_content_to_dict(read_encoded_file(file_path=file_path))
+        utterances_dict = utt_content_to_dict(fread(file_path=file_path))
         return utt_dict_to_content(
             {utt_id: self.transliterate(utt) for utt_id, utt in utterances_dict.items()}
         )
@@ -65,12 +66,15 @@ class Transliteration(Project):
         # Step 6: Generate an extra char and find probable lonsum characters
         content = self.find_and_fix_lonsum(content)
 
+        # Step 7: Generate an extra char and find probable lonsum characters
+        content = self.find_and_fix_lonsum2(content)
+
         # Returns final data
         return content
 
     # Extra Public methods
     def word_map(self, input_data: str, wmap_file: Path = WORDMAP_T_FILE) -> str:
-        wmap_dict = get_dict_from_json(wmap_file)
+        wmap_dict = fget_dict(wmap_file)
         output = [
             wmap_dict.get(word, self.transliterate(content=word))
             for word in input_data.split()
@@ -92,46 +96,62 @@ class Transliteration(Project):
 
     def fix_lonsum_from_mapum_pair(self, data: str) -> str:
         output_data = list(data)
-        for i in range(len(data) - 1):
-            char, next_char = data[i], data[i + 1]
-            if char in self.mm_cheitap:
-                output_data[i + 1] = self.mm_mapum_to_lonsum.get(next_char, next_char)
-
+        for i, char in enumerate(data):
+            if char in self.mm_cheitap and i < len(data) - 1:
+                output_data[i + 1] = self.mm_mapum_to_lonsum.get(
+                    data[i + 1], data[i + 1]
+                )
         return "".join(output_data)
 
     def find_and_fix_lonsum(self, data: str) -> str:
         output_data = list(data)
-        i = 0
-        while i < len(data) - 1:
-            char, next_char = data[i], data[i + 1]
-            if char in self.mm_mapum and next_char in self.mm_mapum:
-                if char not in ["\uabd1"]:
-                    output_data[i + 1] = self.mm_mapum_to_lonsum.get(
-                        next_char, next_char
-                    )
-                i += 1
-            elif char in self.mm_lonsum and next_char in self.mm_lonsum:
-                output_data[
-                    i
-                ] = f"{output_data[i]}{self.mm_lonsum_to_mapum.get(char, char)}"
-                i += 1
-            i += 1
+        for i, char in enumerate(data):
+            if (
+                char in self.mm_mapum
+                and char not in ["\uabd1"]
+                and i < len(data) - 1
+                and data[i + 1] in self.mm_mapum
+            ):
+                output_data[i + 1] = self.mm_mapum_to_lonsum.get(
+                    data[i + 1], data[i + 1]
+                )
+        return "".join(output_data)
+
+    def find_and_fix_lonsum2(self, data: str) -> str:
+        output_data = list(data)
+        for i, char in enumerate(data):
+            if (
+                char in self.mm_lonsum
+                and i < len(data) - 1
+                and data[i + 1] in self.mm_lonsum
+            ):
+                output_data[i] = f"{char}{self.mm_lonsum_to_mapum.get(char, char)}"
         return "".join(output_data)
 
 
 # -------------------------------- SCRIPT MODE -------------------------------- #
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description='Transliteration of bengali unicode text to correct meetei mayek unicode text using rule based method.')
-#     group = parser.add_mutually_exclusive_group()
-#     parser.add_argument('input', type=str, help="enter input string.")
-#     group.add_argument('-f', '--file', action='store_true', help="input is a file name.")
-#     group.add_argument('-d', '--dir', action='store_true', help='input is a directory.')
-#     args = parser.parse_args()
+# TODO: Wordmap part yet to be implemented
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="ransliterates Bengali Unicode to Meetei Mayek Unicode using a rule-based method, supporting transliteration through a wordmap."
+    )
 
-#     t = Transliteration()
-#     if args.file:
-#         t.run_file(file=Path(args.input))
-#     elif args.dir:
-#         t.run_files(dir=Path(args.input))
-#     else:
-#         print(t.transliterate(args.input))
+    parser.add_argument("input_string", type=str, help="Input string to transliterate.")
+    t = Transliteration()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "-f", "--file", action="store_true", help="Input is a file name."
+    )
+    group.add_argument("-d", "--dir", action="store_true", help="Input is a directory.")
+    args = parser.parse_args()
+
+    if args.file:
+        t.transliterate_script(file_path=Path(args.input_string))
+    elif args.dir:
+        directory_path = Path(args.input_string)
+        if directory_path.is_dir():
+            process_directory(t.transliterate_script, directory_path)
+        else:
+            print(f"{directory_path} is not a valid directory.")
+    else:
+        print(t.transliterate(args.input_string))

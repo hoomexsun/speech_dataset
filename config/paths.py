@@ -1,9 +1,12 @@
 from pathlib import Path
 
-from config.lang import BN, MM, S550
+from config.constants import Language
+
+DUMP_DIR = Path("dump")
 
 # -------------------------------- DATA PATHS -------------------------------- #
 DATA_ROOT = Path("data")
+
 
 RTF, RAW, WAV, SEG = "rtf", "raw", "wav", "seg"
 
@@ -11,9 +14,9 @@ SCP, UTT, TXT, WORDS, CHARS = "script", "utt", "txt", "words", "chars"
 
 RTF_DATA = DATA_ROOT / RTF  # Directory for s550 rtf file (file level)
 RAW_DATA = DATA_ROOT / RAW  # Directory for s550 rtf file (file level)
-S550_DATA = DATA_ROOT / S550
-BN_DATA = DATA_ROOT / BN
-MM_DATA = DATA_ROOT / MM
+S550_DATA = DATA_ROOT / Language.S550.value
+BN_DATA = DATA_ROOT / Language.BN.value
+MM_DATA = DATA_ROOT / Language.MM.value
 WAV_DATA = DATA_ROOT / WAV  # Directory for audio files
 SEG_DATA = DATA_ROOT / SEG  # Directory for segmented audio files
 
