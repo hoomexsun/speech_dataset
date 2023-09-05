@@ -1,6 +1,7 @@
 import io
 from typing import Dict, List, Tuple
 import pandas as pd
+import pyperclip
 
 
 def remove_chars(content: str, chars: List[str]) -> str:
@@ -148,3 +149,8 @@ def split_id_and_utt(content: str) -> Tuple[List, List]:
         utt_ids.append(utt_id)
         utterances.extend(utterance)
     return utt_ids, utterances
+
+
+# 3rd party
+def copy_text(char) -> None:
+    pyperclip.copy(char)

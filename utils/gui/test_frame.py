@@ -1,8 +1,7 @@
+from typing import Callable
 import sv_ttk
 import tkinter as tk
 from tkinter import ttk
-from correction import Correction
-from transliteration import Transliteration
 from utils.gui.components import TestItem, y_var, y_var_out
 
 
@@ -10,8 +9,20 @@ ITEM_WIDTH = 200
 
 
 class TestFrame(ttk.Frame):
-    def __init__(self, parent, width: int = 1280, height: int = 720):
+    def __init__(
+        self,
+        parent,
+        correct: Callable,
+        transliterate: Callable,
+        word_map: Callable,
+        width: int = 1280,
+        height: int = 720,
+    ):
         super().__init__(parent)
+        self._parent = parent
+        self.correct = correct
+        self.transliterate = transliterate
+        self.word_map = word_map
         self.width = width
         self.height = height
         self._init_variables()
@@ -31,8 +42,6 @@ class TestFrame(ttk.Frame):
             "MM (WordMap using Dictionary)",
             "MM -> Phoneme (G2P)",
         ]
-        self.c = Correction()
-        self.t = Transliteration()
 
     def add_input_components(self, x, y, width, height):
         self.input_frame = ttk.LabelFrame(self, text="INPUT")
@@ -63,7 +72,10 @@ class TestFrame(ttk.Frame):
         )
         c_and_t_btn.place(x=x, y=y_var(3, 1), width=ITEM_WIDTH)
         g2p_btn = ttk.Button(
-            self.input_frame, text="Generate Phoneme", command=self.gui_mm_g2p
+            self.input_frame,
+            text="Generate Phoneme",
+            command=self.gui_mm_g2p,
+            state=tk.DISABLED,
         )
         g2p_btn.place(x=x, y=y_var(4, 1), width=ITEM_WIDTH)
 
@@ -158,7 +170,7 @@ class TestFrame(ttk.Frame):
         """
         self.fix_input()
         self.reset(True)
-        self._bn_ti.set_values(self.c.correct(self.text))
+        self._bn_ti.set_values(self.correct(self.text))
 
     def gui_transliterate(self) -> None:
         """
@@ -170,7 +182,7 @@ class TestFrame(ttk.Frame):
         self.fix_input()
         text = self.text
         self.reset(True)
-        self._mm_ti_algo.set_values(self.t.transliterate(text))
+        self._mm_ti_algo.set_values(self.transliterate(text))
         self._mm_ti_wmap.set_values(self.gui_wmap(text))
 
     def gui_correct_and_transliterate(self) -> None:
@@ -183,9 +195,9 @@ class TestFrame(ttk.Frame):
         self.fix_input()
         text = self.text
         self.reset(True)
-        str_bn = self.c.correct(text)
+        str_bn = self.correct(text)
         self._bn_ti.set_values(str_bn)
-        self._mm_ti_algo.set_values(self.t.transliterate(str_bn))
+        self._mm_ti_algo.set_values(self.transliterate(str_bn))
         self._mm_ti_wmap.set_values(self.gui_wmap(str_bn))
 
     def gui_wmap(self, text) -> str:
@@ -199,7 +211,7 @@ class TestFrame(ttk.Frame):
             The text after word mapping.
         """
         self.fix_input()
-        return self.t.word_map(text)
+        return self.word_map(text)
 
     def gui_mm_g2p(self) -> None:
         """

@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-import pyperclip
 from config.paths import *
-from utils.text import get_unicode_string, unicode_as_df
+from utils.text import copy_text, get_unicode_string, unicode_as_df
 
 
 class TestItem:
@@ -21,11 +20,12 @@ class TestItem:
         label = ttk.Label(parent, text=title)
         label.place(x=x_var, y=y_var, height=label_height)
 
-        text_entry = ttk.Entry(parent, textvariable=self._text)
+        text_entry = ttk.Entry(parent, textvariable=self._text, state=tk.DISABLED)
         text_entry.place(x=x_var, y=y_var + 30, width=width - count_width, height=25)
 
-        count_char_entry = ttk.Entry(parent, textvariable=self._num_chars)
-        count_char_entry.config(state=tk.DISABLED)
+        count_char_entry = ttk.Entry(
+            parent, textvariable=self._num_chars, state=tk.DISABLED
+        )
         count_char_entry.place(
             x=x_var + width - count_width, y=y_var + 30, width=count_width
         )
@@ -36,7 +36,10 @@ class TestItem:
         self.reset_btn.place(x=x, y=y_var + 30 + 30, width=width // 2)
 
         self.copy_btn = ttk.Button(
-            parent, text="COPY", command=self.copy, state=tk.DISABLED
+            parent,
+            text="COPY",
+            command=lambda c=self._text.get(): copy_text(c),
+            state=tk.DISABLED,
         )
         self.copy_btn.place(
             x=x + width // 2,
@@ -92,9 +95,6 @@ class TestItem:
         self.set_num_chars(0)
         self.text = ""
         self.set_unicode_value("")
-
-    def copy(self) -> None:
-        pyperclip.copy(self.text)
 
     def _get_unicode_info(self, text: str) -> None:
         if self.text != "":
