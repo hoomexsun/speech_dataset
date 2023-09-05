@@ -165,13 +165,112 @@ Use the provided GUI through `gui.py` or `main.py -g` [Underway].
 
 - **Test Mode** allows testing main features using input strings.
 
-![GUI Test Mode](./images/test_snap.png)
+![GUI Test Mode](./images/test_mode.png)
 
-- **Analyze Mode** helps find words containing a specific character.
+- **Search Mode** helps find words containing a specific character. Available for S-550, Bengali and Meetei Mayek.
 
-![GUI Analyze Mode](./images/analyze_snap.png)
+  - **Search Mode:** S-550 Unicode
 
-- `Toggle` function in `Analyze mode` is currently available for only Windows at the moment.
+    ![GUI Search Mode](./images/search_s550.png)
+
+  - **Search Mode:** S-550 Glyph
+
+    ![GUI Analyze Mode](./images/search_s550_glyph.png)
+
+- **Analyze Mode** helps find different combinations in words containing a specific character, sorted according to count. Available for S-550, Bengali and Meetei Mayek.
+
+  - **Analyze Mode:** S-550
+    ![GUI Analyze Mode](./images/analyze_s550.png)
+
+  - **Analyze Mode:** Bengali
+    ![GUI Analyze Mode](./images/analyze_bn.png)
+
+  - **Analyze Mode:** Meetei Mayek
+    ![GUI Analyze Mode](./images/analyze_mm.png)
+
+- The `Glyph` function is a powerful tool designed specifically for Windows users in both `Search Mode` and `Analyze Mode`. It plays a crucial role in displaying English Unicode characters used as building blocks for Bengali glyphs, making it an indispensable feature for various users, including AIR, Sangai Express, as well as various news agencies and press clubs.
+
+**Last Update Changes:**
+
+- **Completed Pagination of Search/Analyze Results**
+
+  - We have successfully implemented pagination for both Search and Analyze results, making it easier to navigate through large datasets.
+
+- **Additional Tabs for Analysis**
+
+  - We have added additional tabs to enhance the analysis experience, providing users with more options and functionalities.
+
+- **Fixed Unsynchronized States of UI with Data**
+
+  - We addressed issues related to UI and data synchronization, ensuring that the user interface accurately reflects the underlying data.
+
+- **Fixed Glyphs Not Working When Page is Navigated**
+
+  - We resolved an issue where glyphs were not rendering correctly when navigating between pages, ensuring a seamless user experience.
+
+- **Fixed Reactivity Issue with Button Commands**
+
+  - We have fixed reactivity issues related to button commands, making sure that all actions trigger the expected responses.
+
+- **Increased Reusability and Renamed Existing Methods**
+
+  - To enhance code maintainability, we've added more methods and improved the naming conventions of existing methods.
+
+- **Improved Decoupling**
+
+  - We've improved the decoupling of components within the codebase, promoting modularity and ease of development.
+
+- **Reduced Use of tkinter Trace to Resolve Memory Leaks**
+
+  - To address memory leak concerns, we've reduced the usage of tkinter trace, ensuring more efficient resource management.
+
+- **Fixed Appearance of Previous Page Content in Results**
+
+  - We've corrected a bug where previous page content was erroneously displayed in search and analyze results.
+
+- **Fixed UI of Analyze Displayed with Data from Search and Vice Versa:**
+
+  - We've resolved an issue where the user interface was displaying data from the wrong mode (Search or Analyze).
+
+- **Disabled Pagination Button at Start and End of Pages**
+
+  - Pagination buttons are now disabled at the start and end of pages when there is no more content to display.
+
+- **Disabled Manual Input for Analyze Mode**
+
+  - In Analyze mode, manual input has been disabled to prevent user errors and ensure data integrity.
+
+- **Changed Toggle to Display When a Custom Font is Used to Render `Glyphs`**
+
+  - A toggle has been introduced to indicate when a custom font is being used to render glyphs, providing users with transparency regarding font settings.
+
+- **Replaced Search Button with Go Button**
+
+  - The `search` button has been replaced with a `Go` button, which provides a more intuitive action for initiating searches.
+
+- **Added Mode Button to Toggle Between Analyze and Search**
+
+  - A `Mode` button has been added to allow users to easily switch between Analyze and Search modes, enhancing user flexibility.
+
+- **Disabled Go Button When Input is Empty**
+
+  - The `Go` button is now disabled when there is no input, preventing unnecessary actions and improving user experience.
+
+- **Reflect Changes When Mode is Toggled Between Search and Analyze**
+
+  - Changes to the user interface and functionality are now immediately reflected when toggling between `Search` and `Analyze` modes.
+
+- **Removed words.txt and chars.txt from gitignore**
+
+  - To expedite testing, we've removed `words.txt` and `chars.txt` from gitignore, allowing for immediate testing of `Search` and `Analyze` functionality.
+
+- **Automatically Created Resources at Start of GUI**
+
+  - Resources are now automatically generated at the start of the GUI, eliminating the need to run the `main.py` script before `gui.py`, streamlining the development process.
+
+- **Other UI Changes**
+
+For any additional information or inquiries, please refer to the accompanying code documentation or open an issue.
 
 ## 4. Script Mode
 
