@@ -25,9 +25,9 @@ Import the necessary classes and use functions from utils for computation. Here'
 - _Using functions from utils:_
 
 ```python
-from utils.file import read_text_file
+from utils.file import fread
 ...
-content = read_text_file(file_path)
+content = fread(file_path)
 ```
 
 ### 2.1. Preprocessing
@@ -44,7 +44,7 @@ p = Preprocessing()
 - _Multiple Files in a directory_
 
 ```python
-for file_path in files:
+for file_path in fget(RAW_S550_DIR):
     content = p.preprocess_file(file_path)
 ```
 
@@ -62,8 +62,7 @@ u = Utterance()
 - _All text files in a directory_
 
 ```python
-files = Utils.get_files(SCP_S550_DIR)
-for file_path in enumerate(files):
+for file_path in fget(SCP_S550_DIR):
     content = u.utterance(file_path)
 ```
 
@@ -99,16 +98,14 @@ content = c.correct_utterances("path/to/file")
 - _All script files inside a directory_
 
 ```python
-files = Utils.get_files("path/to/directory")
-for file_path in files:
+for file_path in fget("path/to/directory"):
     content = c.correct_script(file_path)
 ```
 
 - _All utterance files inside a directory_
 
 ```python
-files = Utils.get_files("path/to/directory")
-for file_path in files:
+for file_path in fget("path/to/directory"):
     content = c.correct_utterances(file_path)
 ```
 
@@ -144,155 +141,175 @@ content = t.transliterate_utterances("path/to/file")
 - _All script files inside a directory_
 
 ```python
-files = Utils.get_files("path/to/directory")
-for file_path in files:
+for file_path in fget("path/to/directory"):
     content = t.transliterate_script(file_path)
 ```
 
 - _All utterance files inside a directory_
 
 ```python
-files = Utils.get_files("path/to/directory")
-for file_path in files:
+for file_path in fget("path/to/directory"):
     content = t.transliterate_utterances(file_path)
 ```
 
 ## 3. GUI Mode
 
-Use the provided GUI through `gui.py` or `main.py -g` [Underway].
+Use the provided GUI through `gui.py` or `main.py -g`.
 
 - The GUI is styled with the [SunValley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme).
 
-- **Test Mode** allows testing main features using input strings.
+### 3.1 **Test Mode**
 
-![GUI Test Mode](./images/test_mode.png)
+- **Test Mode** allows testing main features using input strings
+
+  ![GUI Test Mode](./images/test_mode.png)
+
+### 3.2 **Search Mode**
 
 - **Search Mode** helps find words containing a specific character. Available for S-550, Bengali and Meetei Mayek.
+- **Search Mode:** S-550 Unicode
 
-  - **Search Mode:** S-550 Unicode
+  ![GUI Search Mode](./images/search_s550.png)
 
-    ![GUI Search Mode](./images/search_s550.png)
+- **Search Mode:** S-550 Glyph
 
-  - **Search Mode:** S-550 Glyph
+  ![GUI Analyze Mode](./images/search_s550_glyph.png)
 
-    ![GUI Analyze Mode](./images/search_s550_glyph.png)
+### 3.3 **Analyze Mode**
 
 - **Analyze Mode** helps find different combinations in words containing a specific character, sorted according to count. Available for S-550, Bengali and Meetei Mayek.
+- **Analyze Mode:** S-550
+  ![GUI Analyze Mode](./images/analyze_s550.png)
 
-  - **Analyze Mode:** S-550
-    ![GUI Analyze Mode](./images/analyze_s550.png)
+- **Analyze Mode:** Bengali
+  ![GUI Analyze Mode](./images/analyze_bn.png)
 
-  - **Analyze Mode:** Bengali
-    ![GUI Analyze Mode](./images/analyze_bn.png)
+- **Analyze Mode:** Meetei Mayek
+  ![GUI Analyze Mode](./images/analyze_mm.png)
 
-  - **Analyze Mode:** Meetei Mayek
-    ![GUI Analyze Mode](./images/analyze_mm.png)
+### 3.4 **Glyph**
 
 - The `Glyph` function is a powerful tool designed specifically for Windows users in both `Search Mode` and `Analyze Mode`. It plays a crucial role in displaying English Unicode characters used as building blocks for Bengali glyphs, making it an indispensable feature for various users, including AIR, Sangai Express, as well as various news agencies and press clubs.
 
-**Last Update Changes:**
+### **Last Update Changes:**
 
-- **Completed Pagination of Search/Analyze Results**
+1. **Completed Pagination of Search/Analyze Results**
 
-  - We have successfully implemented pagination for both Search and Analyze results, making it easier to navigate through large datasets.
+   - We have successfully implemented pagination for both Search and Analyze results, making it easier to navigate through large datasets.
 
-- **Additional Tabs for Analysis**
+2. **Additional Tabs for Analysis**
 
-  - We have added additional tabs to enhance the analysis experience, providing users with more options and functionalities.
+   - We have added additional tabs to enhance the analysis experience, providing users with more options and functionalities.
 
-- **Fixed Unsynchronized States of UI with Data**
+3. **Fixed Unsynchronized States of UI with Data**
 
-  - We addressed issues related to UI and data synchronization, ensuring that the user interface accurately reflects the underlying data.
+   - We addressed issues related to UI and data synchronization, ensuring that the user interface accurately reflects the underlying data.
 
-- **Fixed Glyphs Not Working When Page is Navigated**
+4. **Fixed Glyphs Not Working When Page is Navigated**
 
-  - We resolved an issue where glyphs were not rendering correctly when navigating between pages, ensuring a seamless user experience.
+   - We resolved an issue where glyphs were not rendering correctly when navigating between pages, ensuring a seamless user experience.
 
-- **Fixed Reactivity Issue with Button Commands**
+5. **Fixed Reactivity Issue with Button Commands**
 
-  - We have fixed reactivity issues related to button commands, making sure that all actions trigger the expected responses.
+   - We have fixed reactivity issues related to button commands, making sure that all actions trigger the expected responses.
 
-- **Increased Reusability and Renamed Existing Methods**
+6. **Increased Reusability and Renamed Existing Methods**
 
-  - To enhance code maintainability, we've added more methods and improved the naming conventions of existing methods.
+   - To enhance code maintainability, we've added more methods and improved the naming conventions of existing methods.
 
-- **Improved Decoupling**
+7. **Improved Decoupling**
 
-  - We've improved the decoupling of components within the codebase, promoting modularity and ease of development.
+   - We've improved the decoupling of components within the codebase, promoting modularity and ease of development.
 
-- **Reduced Use of tkinter Trace to Resolve Memory Leaks**
+8. **Reduced Use of tkinter Trace to Resolve Memory Leaks**
 
-  - To address memory leak concerns, we've reduced the usage of tkinter trace, ensuring more efficient resource management.
+   - To address memory leak concerns, we've reduced the usage of tkinter trace, ensuring more efficient resource management.
 
-- **Fixed Appearance of Previous Page Content in Results**
+9. **Fixed Appearance of Previous Page Content in Results**
 
-  - We've corrected a bug where previous page content was erroneously displayed in search and analyze results.
+   - We've corrected a bug where previous page content was erroneously displayed in search and analyze results.
 
-- **Fixed UI of Analyze Displayed with Data from Search and Vice Versa:**
+10. **Fixed UI of Analyze Displayed with Data from Search and Vice Versa:**
 
-  - We've resolved an issue where the user interface was displaying data from the wrong mode (Search or Analyze).
+    - We've resolved an issue where the user interface was displaying data from the wrong mode (Search or Analyze).
 
-- **Disabled Pagination Button at Start and End of Pages**
+11. **Disabled Pagination Button at Start and End of Pages**
 
-  - Pagination buttons are now disabled at the start and end of pages when there is no more content to display.
+    - Pagination buttons are now disabled at the start and end of pages when there is no more content to display.
 
-- **Disabled Manual Input for Analyze Mode**
+12. **Disabled Manual Input for Analyze Mode**
 
-  - In Analyze mode, manual input has been disabled to prevent user errors and ensure data integrity.
+    - In Analyze mode, manual input has been disabled to prevent user errors and ensure data integrity.
 
-- **Changed Toggle to Display When a Custom Font is Used to Render `Glyphs`**
+13. **Changed Toggle to Display When a Custom Font is Used to Render `Glyphs`**
 
-  - A toggle has been introduced to indicate when a custom font is being used to render glyphs, providing users with transparency regarding font settings.
+    - A toggle has been introduced to indicate when a custom font is being used to render glyphs, providing users with transparency regarding font settings.
 
-- **Replaced Search Button with Go Button**
+14. **Replaced Search Button with Go Button**
 
-  - The `search` button has been replaced with a `Go` button, which provides a more intuitive action for initiating searches.
+    - The `search` button has been replaced with a `Go` button, which provides a more intuitive action for initiating searches.
 
-- **Added Mode Button to Toggle Between Analyze and Search**
+15. **Added Mode Button to Toggle Between Analyze and Search**
 
-  - A `Mode` button has been added to allow users to easily switch between Analyze and Search modes, enhancing user flexibility.
+    - A `Mode` button has been added to allow users to easily switch between Analyze and Search modes, enhancing user flexibility.
 
-- **Disabled Go Button When Input is Empty**
+16. **Disabled Go Button When Input is Empty**
 
-  - The `Go` button is now disabled when there is no input, preventing unnecessary actions and improving user experience.
+    - The `Go` button is now disabled when there is no input, preventing unnecessary actions and improving user experience.
 
-- **Reflect Changes When Mode is Toggled Between Search and Analyze**
+17. **Reflect Changes When Mode is Toggled Between Search and Analyze**
 
-  - Changes to the user interface and functionality are now immediately reflected when toggling between `Search` and `Analyze` modes.
+    - Changes to the user interface and functionality are now immediately reflected when toggling between `Search` and `Analyze` modes.
 
-- **Removed words.txt and chars.txt from gitignore**
+18. **Removed words.txt and chars.txt from gitignore**
 
-  - To expedite testing, we've removed `words.txt` and `chars.txt` from gitignore, allowing for immediate testing of `Search` and `Analyze` functionality.
+    - To expedite testing, we've removed `words.txt` and `chars.txt` from gitignore, allowing for immediate testing of `Search` and `Analyze` functionality.
 
-- **Automatically Created Resources at Start of GUI**
+19. **Automatically Created Resources at Start of GUI**
 
-  - Resources are now automatically generated at the start of the GUI, eliminating the need to run the `main.py` script before `gui.py`, streamlining the development process.
+    - Resources are now automatically generated at the start of the GUI, eliminating the need to run the `main.py` script before `gui.py`, streamlining the development process.
 
-- **Other UI Changes**
+20. **Other UI Changes**
 
 For any additional information or inquiries, please refer to the accompanying code documentation or open an issue.
 
 ## 4. Script Mode
 
-You can use the script mode for different functions:
+You can use the script mode for different functions.
 
-```bash
-main.py
-gui.py
-main.py -g
-describe.py
-main.py -d
-audio_preparation.py
-correction.py string
-correction.py -f path/to/file
-correction.py -d path/to/dir
-transliteration.py string
-transliteration.py -f path/to/file
-transliteration.py -d path/to/dir
-transliteration.py string -w path/to/wordmap
-transliteration.py -f path/to/file -w path/to/wordmap
-transliteration.py -d path/to/dir -w path/to/wordmap
-```
+### 4.1. Main Scripts
+
+These are the primary scripts that can be executed:
+
+- `main.py`: Run the main script.
+- `gui.py`: Run the GUI (Graphical User Interface) script.
+- `desscribe.py`: Run the Describe script to analyze the dataset.
+
+### 4.2. Main Script with Options
+
+You can use the `main.py` script with additional options:
+
+- `main.py -g`: Run the main script with GUI mode enabled.
+- `main.py -d`: Run the main script with describe mode enabled.
+
+### 4.3. Correction Script
+
+The `correction.py` script is used for text correction:
+
+- `correction.py string`: Correct a single string.
+- `correction.py -f path/to/file`: Correct text in a file
+- `correction.py -d path/to/dir`: Correct text in files within a directory.
+
+### 4.4. Transliteration Script
+
+The `transliteration.py` script is used for text transliteration:
+
+- `transliteration.py string`: Transliterate a single string.
+- `transliteration.py -f path/to/file`: Transliterate text in a file.
+- `transliteration.py -d path/to/dir`: Transliterate text in files within a directory.
+- `transliteration.py string -w path/to/wordmap`: Transliterate a string using a custom wordmap.
+- `transliteration.py -f path/to/file -w path/to/wordmap`: Transliterate text in a file using a custom wordmap.
+- `transliteration.py -d path/to/dir -w path/to/wordmap`: Transliterate text in files within a directory using a custom wordmap.
 
 ## 5. Directory Structure
 

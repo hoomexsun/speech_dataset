@@ -30,8 +30,8 @@ class AnalyzeFrame(ttk.Frame):
         loadfont("utils/fonts/S-550.ttf")
         self._custom_font = font.Font(family="S-550", size=18)
         self._default_font = font.nametofont("TkDefaultFont")
-        self._input = tk.StringVar()
-        self._input.trace("w", self.on_input_change)
+        self._text = tk.StringVar()
+        self._text.trace("w", self.on_input_change)
         self._use_custom_font = True if self._glyph_mode else False
         self._analyze_mode = True
         self._matched_words: list = []
@@ -40,6 +40,7 @@ class AnalyzeFrame(ttk.Frame):
         self._num_matches = tk.IntVar()
         self._num_words = tk.IntVar()
         self._results_var = tk.StringVar(value=f"Not searching at the moment...")
+        self._undo_state = False
 
     # UI
     def _init_ui(self):
@@ -62,7 +63,7 @@ class AnalyzeFrame(ttk.Frame):
         )
         x, y, width, height = 10, 10, width - 20, height - 20
         self.input_entry = ttk.Entry(
-            self.input_frame, textvariable=self._input, state=self.is_go_disabled()
+            self.input_frame, textvariable=self._text, state=self.is_go_disabled()
         )
         self.input_entry.place(x=x, y=y, width=240)
 
@@ -182,7 +183,8 @@ class AnalyzeFrame(ttk.Frame):
                 parent,
                 text=f"{rank}. {comb} ({count})",
                 style="LeftAligned.TButton",
-                command=lambda c=comb: copy_text(c),
+                command=lambda c=comb: self.go_output(c),
+                # command=lambda c=comb: copy_text(c),
             )
             comb_btn.place(
                 x=x + x_offset * x_multiplier,
@@ -225,13 +227,17 @@ class AnalyzeFrame(ttk.Frame):
     def toggle_mode(self) -> None:
         self._analyze_mode = not self._analyze_mode
         self.on_mode_toggle()
-        if not len(self._input.get()) == 0:
+        if not len(self._text.get()) == 0:
             self.go()
 
     def go_char(self, input: str | None = None) -> None:
         self.hard_reset_ui()
-        self._input.set(self._input.get() if input == None else input)
+        self._text.set(self._text.get() if input == None else input)
         self.go()
+
+    def go_output(self, comb: str) -> None:
+        self.go_char(comb)
+        self.toggle_mode()
 
     def prev_page(self):
         if self._current_page > 0:
@@ -254,6 +260,9 @@ class AnalyzeFrame(ttk.Frame):
     def update_items_per_page(self) -> int:
         return 76 if self._analyze_mode else 95
 
+    def is_undo_availabe(self) -> str:
+        return tk.NORMAL if self._undo_state else tk.DISABLED
+
     def is_glyph_used(self) -> str:
         return tk.NORMAL if self._glyph_mode else tk.DISABLED
 
@@ -263,7 +272,7 @@ class AnalyzeFrame(ttk.Frame):
     def is_go_disabled(self) -> str:
         return (
             tk.DISABLED
-            if self._analyze_mode or len(self._input.get()) == 0
+            if self._analyze_mode or len(self._text.get()) == 0
             else tk.NORMAL
         )
 
@@ -318,7 +327,7 @@ class AnalyzeFrame(ttk.Frame):
         self._items_per_page = self.update_items_per_page()
 
     def on_result_change(self) -> None:
-        result_text = f"Found {self._input.get()} ({get_unicode_string(self._input.get())}) in {self._num_matches.get()} "
+        result_text = f"Found {self._text.get()} ({get_unicode_string(self._text.get())}) in {self._num_matches.get()} "
         if self._analyze_mode:
             result_text += f"combinations."
         else:
@@ -334,12 +343,12 @@ class AnalyzeFrame(ttk.Frame):
                 f"{idx+1}:{word}:{count}"
                 for idx, (word, count) in enumerate(
                     generate_char_dictionary(
-                        char=self._input.get(), words=self._words
+                        char=self._text.get(), words=self._words
                     ).items()
                 )
             ]
             if self._analyze_mode
-            else [word for word in self._words if self._input.get() in word]
+            else [word for word in self._words if self._text.get() in word]
         )
         self._current_page = 0
         self._num_matches.set(len(self._matched_words))
