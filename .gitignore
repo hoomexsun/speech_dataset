@@ -16,27 +16,27 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Personal Folder
-data/rtf
-data/raw
-data/seg
-data/wav
-data/s550/script
-data/s550/utt
-data/s550/txt
-data/bn/script
-data/bn/utt
-data/bn/txt
-data/mm/script
-data/mm/utt
-data/mm/txt
-local
+data/lang/rtf
+data/lang/raw
+data/lang/seg
+data/lang/wav
+data/lang/s550/news
+data/lang/s550/utt
+data/lang/s550/text
+data/lang/bn/news
+data/lang/bn/utt
+data/lang/bn/text
+data/lang/mm/news
+data/lang/mm/utt
+data/lang/mm/text
+data/res
+docs/theory
 logs
-res
-theory
 output
 
 # Backup Python files
 *_backup.py
+*_fix.py
 *.zip
 test.py
 

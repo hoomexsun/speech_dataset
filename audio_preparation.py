@@ -1,5 +1,5 @@
-from config.paths import *
-from utils.file import create_segment_folder
+from src.config.paths import SEG_DATA, WAV_DATA
+from src.utils.file import create_segment_folder
 
 
 def prepare_audio():

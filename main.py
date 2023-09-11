@@ -1,6 +1,5 @@
 import argparse
-from config.project import setup_arg_parser
-from dataset import DatasetProject
+from src.dataset import DatasetProject
 from describe import describe
 from gui import gui
 

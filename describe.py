@@ -1,12 +1,10 @@
 import os
-from pathlib import Path
-from typing import Collection, Dict, List
+from typing import Collection, List
 from matplotlib import pyplot as plt
 import pandas as pd
-from config.paths import RAW_DATA, WAV_DATA
-from config.project import speaker_dict, time_dict, month_dict, year_dict
-from utils.file import fget
-from utils.text import pct
+from src.config.paths import GEN_DIR, RAW_DATA, WAV_DATA
+from src.utils.file import fget
+from src.utils.project import speaker_dict, time_dict, month_dict, year_dict
 
 
 def describe():
@@ -48,10 +46,10 @@ def print_stage_status(data_list: Collection[str], desc: str = "file") -> None:
 
 def generate(scripts: Collection[str]) -> None:
     script_info_df = build_file_and_speaker_info(list(scripts))
-    os.makedirs("generated", exist_ok=True)
-    script_info_df.to_csv("generated/script_info.csv", index=False)
+    os.makedirs(GEN_DIR, exist_ok=True)
+    script_info_df.to_csv(GEN_DIR / "script_info.csv", index=False)
     sorted_script_info_df = script_info_df.sort_values(by="spk_id")
-    sorted_script_info_df.to_csv("generated/sorted_script_info.csv", index=False)
+    sorted_script_info_df.to_csv(GEN_DIR / "sorted_script_info.csv", index=False)
     plot_dataset_speakers(script_info_df)
 
 
@@ -120,7 +118,9 @@ def plot_dataset_speakers(file_info_df: pd.DataFrame) -> None:
     ax2.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle
 
     # Save each subplot to a file
-    fig.savefig("generated/speaker_distribution_plot.png", bbox_inches="tight")
+    fig.savefig(
+        (GEN_DIR / "speaker_distribution_plot.png").as_posix(), bbox_inches="tight"
+    )
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust subplot layout
     plt.show()

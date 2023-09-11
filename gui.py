@@ -1,7 +1,7 @@
 import tkinter as tk
 import sv_ttk
-from steps.res import init_resources
-from utils.gui import MainFrame
+from src.core.res import init_resources
+from src.gui import MainFrame
 
 
 class App:
@@ -15,7 +15,6 @@ class App:
 
 def center_window(root, width, height) -> str:
     x = (root.winfo_screenwidth() - width) // 2
-    # y = (root.winfo_screenheight() - height) // 2
     return f"{width}x{height}+{x}+0"
 
 
