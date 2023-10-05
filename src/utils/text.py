@@ -36,7 +36,7 @@ def replace_two_chars(content: str, charmap: Dict[str, str]) -> str:
 
 def fix_mistypes(content: str, chars: List[str], num_mistypes: int = 2) -> str:
     for char in chars:
-        for num in range(num_mistypes + 1, 2, -1):
+        for num in range(num_mistypes + 1, 1, -1):
             content = content.replace(char * num, char)
     return content
 
@@ -80,7 +80,10 @@ def get_unicode_string(content: str, skip_newline: bool = False) -> str:
         if char == "\n" and skip_newline:
             ss.write("\n")
         else:
-            ss.write("\\u" + format(ord(char), "x").zfill(4))
+            try:
+                ss.write("\\u" + format(ord(char), "x").zfill(4))
+            except UnicodeEncodeError:
+                ss.write("\\x" + char.encode("utf-8").hex())
     return ss.getvalue()
 
 

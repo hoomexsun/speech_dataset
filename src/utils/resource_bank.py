@@ -502,7 +502,7 @@ bn_double_vowel_charmap = {
 bn_fix_error_charmap = {
     "\u0985\u09be": "\u0986",  # \u0985\u09be -> অ + া : \u0986 -> আ
     "\u09cb\u09be": "\u09cb",  # \u09cb\u09be -> ো + া : \u09cb -> ো
-    "\u09cc\u09d7": "\u09cc",  # \u09cc\u09d7 -> ৌ + ৗ : \u09cc -> ৌ
+    "\u09cc\u09d7": "\u09cc",  # \u09cc\u09d7 -> ৌ + ৗ : \u09cc -> ৌl[fe]
     "\u09cd\u09cd": "\u09cd",  # \u09cd\u09cd -> ্ +  ্ : \u09cd -> ্
 }
 

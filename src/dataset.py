@@ -28,7 +28,6 @@ from src.config.paths import (
 from src.utils.project import Project, process_directory
 from src.core.correction import Correction
 from src.core.preprocessing import Preprocessing
-from src.core.res import init_resources
 from src.core.clusterization import Clusters
 from src.core.utterance import Utterance
 from src.core.transliteration import Transliteration
@@ -41,23 +40,16 @@ from src.utils.builder import MarkdownBuilderUtils
 class DatasetProject(Project):
     def __init__(self) -> None:
         super().__init__("main")
-        init_resources()
-        self.__init_classes()
-        self.__init_vars()
-
-    def __init_classes(self) -> None:
         self.p = Preprocessing()
         self.u = Utterance()
         self.c = Correction()
         self.t = Transliteration()
-
-    def __init_vars(self):
         self.s550_utts = dict()
         self.bn_utts = dict()
         self.mm_utts = dict()
 
     def run(self):
-        # Step 0: Preprocessing [NEW]
+        # Step 0: Preprocessing
         process_directory(
             func=self.p.preprocess_file,
             dir=RAW_DATA,
@@ -65,7 +57,7 @@ class DatasetProject(Project):
             desc="Preprocessing Files",
         )
 
-        # Step 1: Utterances [NEW]
+        # Step 1: Utterances
         self.s550_utts = process_directory(
             func=self.u.utterance,
             dir=NEWS_S550_DIR,
@@ -93,7 +85,6 @@ class DatasetProject(Project):
 
         # Step 2: Correction
         # Step 2.0.1: Correction of Scripts
-        # Step 2.0.1: Correction of Scripts [NEW]
         process_directory(
             func=self.c.correct_script,
             dir=NEWS_S550_DIR,
@@ -101,7 +92,7 @@ class DatasetProject(Project):
             desc="Correcting News",
         )
 
-        # Step 2.0.2: Correction of Utterances [NEW]
+        # Step 2.0.2: Correction of Utterances
         self.bn_utts = process_directory(
             func=self.c.correct_utterances,
             dir=UTT_S550_DIR,
@@ -119,7 +110,7 @@ class DatasetProject(Project):
         self.save_chars_file(utt_path=TEXT_BN_FILE, file_path=CHARS_BN_FILE, utf=True)
 
         # Step 3: Transliteration
-        # Step 3.0.1: Transliteration of Scripts [NEW]
+        # Step 3.0.1: Transliteration of Scripts
         process_directory(
             func=self.t.transliterate_script,
             dir=NEWS_BN_DIR,
@@ -127,7 +118,7 @@ class DatasetProject(Project):
             desc="Transliterating News",
         )
 
-        # Step 3.0.2: Transliteration of Utterances [NEW]
+        # Step 3.0.2: Transliteration of Utterances
         self.mm_utts = process_directory(
             func=self.t.transliterate_utterances,
             desc="Transliterating Utterances",

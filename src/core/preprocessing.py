@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+from src.core.tokenization import tokenize_number
 from src.utils.project import Project
 from src.utils.file import fget_rtf_text, fread
 
@@ -66,6 +67,8 @@ class Preprocessing(Project):
             .replace(f"{self.cheikhei}", f"{self.cheikhei}\n")
             .replace("\n ", "\n")
         )
+
+        news_string = tokenize_number(news_string)
 
         return news_string
 

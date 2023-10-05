@@ -1,94 +1,82 @@
-from src.config.paths import (
-    ALPHABET_DIR,
-    B2M_FILE,
-    CORRECTION_DIR,
-    FPOS_FILE,
-    MM_ALPHABET_FILE,
-    SNB_FILE,
-    TRANSLITERATION_DIR,
-)
-from src.utils.file import fwrite_json
-from src.utils.resource_bank import *
+from typing import Dict, List
+from src.utils.bn_map import *
+from src.utils.mm_map import *
 
 
-def init_correction_resource(res_dir=CORRECTION_DIR):
-    s550_single_charmap = {
-        **s550_single_single,
-        **s550_prefix,
-        **s550_suffix,
-        **s550_single_double_v,
-        **s550_single_double,
-        **s550_single_triple,
-        **s550_single_xtra,
-    }
+class Resource:
+    # Correction Resources
+    def bn_map(self) -> Dict[int, Dict[str, str]]:
+        bn_dict = {
+            **BN_ALPHABET,
+            **BN_INCOMPLETE,
+            **BN_COMPLETE,
+            **BN_VOWEL_LEFT,
+            **BN_VOWEL_RIGHT,
+            **BN_VOWEL_DOWN,
+            **BN_PUNCTUATION,
+            **BN_EXTRA,
+        }
+        grouped_dict = {}
+        for key, value in bn_dict.items():
+            key_length = len(key)
+            if key_length not in grouped_dict:
+                grouped_dict[key_length] = {}
+            grouped_dict[key_length][key] = value
+        return grouped_dict
 
-    chars_to_replace = {
-        "s550_single_charmap": s550_single_charmap,
-        "s550_double_charmap": s550_double_charmap,
-        "s550_triple_charmap": s550_triple_charmap,
-        "s550_post_charmap": s550_post_charmap,
-        "bn_double_vowel_charmap": bn_double_vowel_charmap,
-        "bn_fix_error_charmap": bn_fix_error_charmap,
-    }
+    @property
+    def s550_adjust(self) -> Dict[str, str]:
+        return S550_ADJUST
 
-    position_to_fix = {
-        "s550_insignificant_chars": s550_invisible_char,
-        "s550_suffix_char_r": s550_suffix_char_r,
-        "bn_prefix_char_v": bn_prefix_char_v,
-        "bn_suffix_char_v": bn_suffix_char_v,
-    }
+    @property
+    def bn_prefix_vowels(self) -> List[str]:
+        return list({vowel for vowel in BN_VOWEL_LEFT.values()})
 
-    write_json_data(chars_to_replace, res_dir / SNB_FILE)
-    write_json_data(position_to_fix, res_dir / FPOS_FILE)
+    @property
+    def bn_suffix_r(self) -> List[str]:
+        return list({r for r in BN_R_RIGHT.keys()})
 
+    @property
+    def bn_suffix_r_replacement(self) -> Dict[str, str]:
+        return BN_R_RIGHT
 
-def init_transliteration_resource(res_dir=TRANSLITERATION_DIR):
-    bn_single_charmap = {
-        **bn_c_to_mm_c,
-        **bn_v_to_mm_v_begin,
-        **bn_v_to_mm_v_mid,
-        **bn_num_to_mm_num,
-        **bn_punctuation,
-    }
+    @property
+    def virama(self) -> str:
+        return "\u09cd"
 
-    mm_lonsum_to_mapum = {value: key for (key, value) in mm_mapum_to_lonsum.items()}
+    @property
+    def bn_double_vowel_charmap(self) -> Dict[str, str]:
+        return POST_BN_VOWEL_OUTSIDE
 
-    bn_to_mm_charmap = {
-        "bn_single_charmap": bn_single_charmap,
-        "bn_viramma_mm_apun": bn_viramma_mm_apun,
-        "bn_viramma_mm_coda": bn_viramma_mm_coda,
-        "mm_mapum_to_lonsum": mm_mapum_to_lonsum,
-        "mm_lonsum_to_mapum": mm_lonsum_to_mapum,
-        "mm_e_lonsum_coda": mm_e_lonsum_coda,
-    }
+    @property
+    def en_punctuations(self) -> List[str]:
+        return list(EN_PUNCTUATIONS)
 
-    write_json_data(bn_to_mm_charmap, res_dir / B2M_FILE)
+    @property
+    def s550_insignificant_chars(self) -> List[str]:
+        return list(S550_INSIGNIFICANT_CHARS)
 
+    # Transliteration Resources
+    @property
+    def mm_onset(self) -> Dict[str, str]:
+        return MM_ONSET
 
-def init_alphabet_resource(res_dir=ALPHABET_DIR):
-    mm_chars = mm_mapum + mm_lonsum + mm_cheitap + mm_cheising + mm_khudam
+    @property
+    def mm_coda(self) -> Dict[str, str]:
+        return MM_CODA
 
-    mm_charmap = {
-        "mm_chars": mm_chars,
-        "mm_mapum": mm_mapum,
-        "mm_lonsum": mm_lonsum,
-        "mm_cheitap": mm_cheitap,
-        "mm_cheising": mm_cheising,
-        "mm_khudam": mm_khudam,
-    }
+    @property
+    def mm_nucleus_begin(self) -> Dict[str, str]:
+        return MM_NUCLEUS_BEGIN
 
-    write_json_data(mm_charmap, res_dir / MM_ALPHABET_FILE)
+    @property
+    def mm_nucleus_mid(self) -> Dict[str, str]:
+        return MM_NUCLEUS_MID
 
+    @property
+    def mm_nucleus_end(self) -> Dict[str, str]:
+        return MM_NUCLEUS_END
 
-def write_json_data(data, file_path):
-    fwrite_json(data=data, file_path=file_path)
-
-
-def init_resources():
-    init_correction_resource()
-    init_transliteration_resource()
-    init_alphabet_resource()
-
-
-if __name__ == "__main__":
-    init_resources()
+    @property
+    def mm_post_map(self) -> Dict[str, str]:
+        return get_post_map()

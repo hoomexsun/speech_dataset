@@ -2,22 +2,34 @@
 
 This repository contains a collection of tools used to create a Manipuri dataset in both Bengali and Meetei/Meitei Mayek scripts.
 
+What's new?
+
+- Modified Correction Algorithm
+  - fixed wrong mapping
+  - considered whitespace as part of combination
+  - _LEFT_ Whitespace as whitespace (need to find the specific combination)
+  - Swap character function for wrong order of character using adjust (for wrong s550 sequence)
+- New Approach for transliteration **UNDERWAY**
+  - Break-Build Algorithm
+  - Bengali Script -> Transliteration Unit (TU) -> Meetei Mayek Script
+  - Read more in docs/algorithm
+
 ## 1. Overview
 
 The project consists of several modules:
 
-| Title               | Description                                                                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Preprocessing**   | Formats news text into raw data suitable for further processing. [+Tokenization]                                                            |
-| **Utterance**       | Generates utterance files with utterances and IDs from script text files for s550 glyphs. Also includes utility functions. [+Segmmentation] |
-| **Correction**      | Converts s-550 glyphs into correct Bengali Unicode characters.                                                                              |
-| **Transliteration** | Transliterates Bengali Unicode to Meetei Mayek Unicode using a rule-based method, supporting transliteration through a wordmap.             |
-| **Postprocessing**  | Formats utterance text file into complete words. [+Normalization]                                                                           |
-| **GUI Mode**        | Provides a GUI interface to test functions using input strings.                                                                             |
-| **Script Mode**     | Offers CLI-based access to essential features.                                                                                              |
-| **Dataset**         | The main class containing the project pipeline.                                                                                             |
-| **Utils & Config**  | A group of lower level utility functions.                                                                                                   |
-| **Describe**        | Describe the dataset including speaker infos.                                                                                               |
+| Title               | Description                                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Preprocessing**   | Formats news text into raw data suitable for further processing. [+Tokenization]                                                           |
+| **Utterance**       | Generates utterance files with utterances and IDs from script text files for s550 glyphs. Also includes utility functions. [+Segmentation] |
+| **Correction**      | Converts s-550 glyphs into correct Bengali Unicode characters.                                                                             |
+| **Transliteration** | Transliterates Bengali Unicode to Meetei Mayek Unicode using a rule-based method, supporting transliteration through a wordmap.            |
+| **Postprocessing**  | Formats utterance text file into complete words. [+Normalization]                                                                          |
+| **GUI Mode**        | Provides a GUI interface to test functions using input strings.                                                                            |
+| **Script Mode**     | Offers CLI-based access to essential features.                                                                                             |
+| **Dataset**         | The main class containing the project pipeline.                                                                                            |
+| **Utils & Config**  | A group of lower level utility functions.                                                                                                  |
+| **Describe**        | Describe the dataset including speaker infos.                                                                                              |
 
 ## 2. Use Cases
 

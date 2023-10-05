@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List, Tuple
-from src.config.paths import CORRECTION_DIR, FPOS_FILE, SNB_FILE
-from src.utils.file import fget_dict, fread
+from src.core.res import Resource
+from src.utils.file import fread
+from src.utils.project import Project
 from src.utils.text import (
     fix_mistypes,
     remove_chars,
@@ -9,39 +10,12 @@ from src.utils.text import (
     utt_content_to_dict,
     utt_dict_to_content,
 )
-from src.utils.project import Project
-
-# TODO: Add tokenization, normalization technique from src.core
 
 
 class Correction(Project):
     def __init__(self) -> None:
         super().__init__("Correction")
-        self.__init_vars()
-        self.__init_res()
-
-    # Initializations
-    def __init_vars(self):
-        self.res_dir = CORRECTION_DIR
-        self.virama = "\u09cd"
-
-    def __init_res(self):
-        chars_to_replace = fget_dict(file_path=self.res_dir / SNB_FILE)
-        position_to_fix = fget_dict(file_path=self.res_dir / FPOS_FILE)
-        self.s550_single_charmap = chars_to_replace.get("s550_single_charmap", {})
-        self.s550_double_charmap = chars_to_replace.get("s550_double_charmap", {})
-        self.s550_triple_charmap = chars_to_replace.get("s550_triple_charmap", {})
-        self.s550_insignificant_chars = position_to_fix.get(
-            "s550_insignificant_chars", []
-        )
-        self.s550_fix_suffix_char_r = position_to_fix.get("s550_suffix_char_r", [])
-        self.bn_fix_prefix_char_v = position_to_fix.get("bn_prefix_char_v", [])
-        self.bn_fix_suffix_char_v = position_to_fix.get("bn_suffix_char_v", [])
-        self.s550_post_charmap = chars_to_replace.get("s550_post_charmap", {})
-        self.bn_double_vowel_charmap = chars_to_replace.get(
-            "bn_double_vowel_charmap", {}
-        )
-        self.bn_fix_error_charmap = chars_to_replace.get("bn_fix_error_charmap", {})
+        self.res = Resource()
 
     # Public methods
     def correct_script(self, file_path: Path) -> str:
@@ -54,193 +28,101 @@ class Correction(Project):
         )
 
     def correct(self, content: str) -> str:
-        # Step 1: Remove insignificant characters
-        content = self.__remove_insignificant_chars(content)
+        # Step 0: Adjusting s550 characters
+        content = self.__adjust(content)
 
-        # Step 2: Mapping to Unicode
+        # Step 1: Mapping Bengali Alphabet
         content = self.__map_unicode(content)
 
-        # Step 3: Fix double virama
-        content = self.__fix_double_virama(content)
+        # Step 2: Remove insignificant characters
+        content = self.__remove_insignificant_chars(content)
 
-        # Step 4: Fix suffix position of r
+        # Step 3: Fix suffix position of r
         content = self.__fix_suffix_r(content)
 
-        # Step 5: Post mapping r
+        # Step 4: Post mapping r
         content = self.__post_mapping_r(content)
 
-        # Step 6: Fix prefix position of vowels
+        # Step 5: Fix prefix position of vowels
         content = self.__fix_prefix_v(content)
 
-        # Step 7: Combine vowels
+        # Step 6: Combine vowels
         content = self.__combine_vowels(content)
-
-        # Step 8: Fix all the small errors and mistypes
-        content = self.__fix_errors_and_mistypes(content)
 
         # Returns final content
         return content
 
     # Private methods
-    def __remove_insignificant_chars(self, data: str) -> str:
-        return remove_chars(content=data, chars=self.s550_insignificant_chars)
+    def __adjust(self, data: str) -> str:
+        for key, value in self.res.s550_adjust.items():
+            data = data.replace(key, value)
+        return data
 
     def __map_unicode(self, data: str) -> str:
-        mapped_data = []
-        i = 0
-        while i < len(data):
-            triple_char = data[i : i + 3]
-            double_char = data[i : i + 2]
-            if triple_char in self.s550_triple_charmap:
-                mapped_data.append(self.s550_triple_charmap[triple_char])
-                i += 3
-            elif double_char in self.s550_double_charmap:
-                mapped_data.append(self.s550_double_charmap[double_char])
-                i += 2
-            else:
-                mapped_data.append(self.s550_single_charmap.get(data[i], data[i]))
-                i += 1
-        return "".join(mapped_data)
+        bn_map = self.res.bn_map()
+        MAX_KEY_LENGTH = 3
+        for key_length in range(MAX_KEY_LENGTH, 0, -1):
+            for key, value in bn_map[key_length].items():
+                data = data.replace(key, value)
+        return self.__fix_double_virama(data)
 
     def __fix_double_virama(self, data: str) -> str:
-        return fix_mistypes(content=data, chars=[self.virama])
+        return fix_mistypes(content=data, chars=[self.res.virama])
 
     def __fix_suffix_r(self, data: str) -> str:
-        fixed_data = []
-        for i in range(len(data)):
-            if data[i] in self.s550_fix_suffix_char_r:
-                if i > 7:
-                    previous_letters = data[i - 7 : i]
-                    (
-                        fixed_string_as_list,
-                        returned_index,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(previous_letters[::-1])
-                    )
-                elif i > 5:
-                    previous_letters = data[i - 5 : i]
-                    (
-                        fixed_string_as_list,
-                        returned_index,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(previous_letters[::-1])
-                    )
-                elif i > 3:
-                    previous_letters = data[i - 3 : i]
-                    (
-                        fixed_string_as_list,
-                        returned_index,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(previous_letters[::-1])
-                    )
+        char_list = []
+        for idx, char in enumerate(data):
+            if char in self.res.bn_suffix_r:
+                if idx > 6:
+                    substring, offset = self.__jump(data[idx - 7 : idx + 1][::-1])
+                elif idx > 4:
+                    substring, offset = self.__jump(data[idx - 5 : idx + 1][::-1])
+                elif idx > 2:
+                    substring, offset = self.__jump(data[idx - 3 : idx + 1][::-1])
                 else:
-                    previous_letters = data[i - 1 : i]
-                    (
-                        fixed_string_as_list,
-                        returned_index,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(previous_letters[::-1])
-                    )
-                # if err:
-                #     display_line(
-                #         title=self.title,
-                #         desc="Incorrect letters at the start of file",
-                #         target="FIX",
-                #     )
-                fixed_data = (
-                    fixed_data[: i - returned_index] + fixed_string_as_list[::-1]
-                )
+                    substring, offset = self.__jump(data[idx - 1 : idx + 1][::-1])
+                char_list = char_list[: idx - offset] + substring[::-1]
             else:
-                fixed_data.append(data[i])
+                char_list.append(char)
 
-        return "".join(fixed_data)
-
-    def __post_mapping_r(self, data: str) -> str:
-        return replace_chars(content=data, charmap=self.s550_post_charmap)
+        return "".join(char_list)
 
     def __fix_prefix_v(self, data: str) -> str:
-        fixed_data = []
+        char_list = []
         skip_index = -1
-        for i in range(len(data)):
-            if data[i] in self.bn_fix_prefix_char_v:
-                if i + 7 <= len(data):
-                    next_letters = data[i + 1 : i + 7]
-                    (
-                        fixed_string_as_list,
-                        indices_to_skip,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(next_letters)
-                    )
-                elif i + 5 <= len(data):
-                    next_letters = data[i + 1 : i + 5]
-                    (
-                        fixed_string_as_list,
-                        indices_to_skip,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(next_letters)
-                    )
-                else:
-                    next_letters = data[i + 1 : i + 3]
-                    (
-                        fixed_string_as_list,
-                        indices_to_skip,
-                        err,
-                    ) = self.__find_and_fix_position(
-                        letter=data[i], remaining_letters=list(next_letters)
-                    )
-                # if err:
-                #     display_line(
-                #         title=self.title,
-                #         desc="Incorrect letters at the end of file",
-                #         target="FIX",
-                #     )
-                fixed_data += fixed_string_as_list
-                skip_index = i + indices_to_skip
-            elif i == skip_index:
+        for idx, char in enumerate(data):
+            if idx == skip_index:
                 skip_index = -1
-            elif i > skip_index:
-                fixed_data.append(data[i])
+            elif char in self.res.bn_prefix_vowels:
+                if idx <= len(data) - 7:
+                    substring, offset = self.__jump(data[idx : idx + 8])
+                elif idx <= len(data) - 5:
+                    substring, offset = self.__jump(data[idx : idx + 6])
+                else:
+                    substring, offset = self.__jump(data[idx : idx + 4])
+                char_list += substring
+                skip_index = idx + offset
+            elif idx > skip_index:
+                char_list.append(char)
 
-        return "".join(fixed_data)
+        return "".join(char_list)
+
+    def __jump(self, chars: str) -> Tuple[List[str], int]:
+        char, *right = chars
+        idx = 0
+        while idx < len(right) - 1 and right[idx + 1] == self.res.virama:
+            idx += 2
+        if idx >= len(right):
+            return list(chars), 1
+        return (right[: idx + 1] + [char], idx + 1)
+
+    def __post_mapping_r(self, data: str) -> str:
+        return self.__fix_double_virama(
+            replace_chars(content=data, charmap=self.res.bn_suffix_r_replacement)
+        )
 
     def __combine_vowels(self, data: str) -> str:
-        return replace_chars(content=data, charmap=self.bn_double_vowel_charmap)
+        return replace_chars(content=data, charmap=self.res.bn_double_vowel_charmap)
 
-    def __fix_errors_and_mistypes(self, data: str) -> str:
-        data = replace_chars(content=data, charmap=self.bn_fix_error_charmap)
-        return fix_mistypes(
-            content=data, chars=self.bn_fix_prefix_char_v + self.bn_fix_suffix_char_v
-        )
-
-    def __find_and_fix_position(
-        self, letter: str, remaining_letters: List[str]
-    ) -> Tuple[List, int, bool]:
-        index_to_put = 0
-        if len(remaining_letters) > 1 and remaining_letters[1] == self.virama:
-            index_to_put += 2
-            if len(remaining_letters) > 3 and remaining_letters[3] == self.virama:
-                index_to_put += 2
-                if len(remaining_letters) > 5 and remaining_letters[5] == self.virama:
-                    index_to_put += 2
-
-        if index_to_put >= len(remaining_letters):
-            return list(letter) + remaining_letters, 1, True
-
-        fixed_string_as_list = list(remaining_letters[0])
-        for i in range(index_to_put):
-            remaining_letters[i] = remaining_letters[i + 1]
-        remaining_letters[index_to_put] = letter
-        fixed_string_as_list += remaining_letters
-        next_index_after_letter = index_to_put + 1
-
-        return (
-            fixed_string_as_list[: next_index_after_letter + 1],
-            next_index_after_letter,
-            False,
-        )
+    def __remove_insignificant_chars(self, data: str) -> str:
+        return remove_chars(content=data, chars=self.res.s550_insignificant_chars)

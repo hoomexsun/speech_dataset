@@ -1,6 +1,5 @@
 import tkinter as tk
 import sv_ttk
-from src.core.res import init_resources
 from src.gui import MainFrame
 
 
@@ -19,7 +18,6 @@ def center_window(root, width, height) -> str:
 
 
 def gui():
-    init_resources()
     root = tk.Tk()
     sv_ttk.set_theme("light")
     app = App(root)

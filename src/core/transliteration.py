@@ -132,3 +132,63 @@ class Transliteration(Project):
             ):
                 output_data[i] = f"{char}{self.mm_lonsum_to_mapum.get(char, char)}"
         return "".join(output_data)
+
+
+### NEW
+
+from typing import Any
+
+
+VOWELS = "aeiou"
+
+
+class TU:
+    def __init__(self, input_str: str) -> None:
+        self.input_str = input_str
+        self.type = "ws" if self.is_whitespace(input_str) else "sy"
+        if self.type == "sy":
+            self.syllabify()
+            self.typify()
+
+    def is_whitespace(self, inp: str) -> bool:
+        return inp in (" ", "\n")
+
+    def syllabify(self) -> None:
+        vowel_indices = [i for i, char in enumerate(self.input_str) if char in VOWELS]
+
+        if not vowel_indices:
+            self.syllable = ("", "", self.input_str)
+        else:
+            first_vowel_index = vowel_indices[0]
+            vowel_num = len(vowel_indices)
+            onset = self.input_str[:first_vowel_index]
+            nucleus = self.input_str[first_vowel_index : first_vowel_index + vowel_num]
+            coda = self.input_str[first_vowel_index + vowel_num :]
+            self.syllable = (onset, nucleus, coda)
+
+    def typify(self) -> None:
+        if not self.syllable[0] and not self.syllable[2]:
+            self.type = "v"
+        elif not self.syllable[0]:
+            self.type = "vc"
+        elif not self.syllable[2]:
+            self.type = "cv"
+        else:
+            self.type = "cvc"
+
+    def __str__(self) -> str:
+        if self.type == "ws":
+            return f"Whitespace | {self.input_str}"
+        else:
+            return f"{self.type} | {self.syllable}"
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        print(str(self))
+
+
+if __name__ == "__main__":
+    test_cases = ["sfirr", "i", "sfierr", "fierr", "ierr", "err", "ber", " ", "\n"]
+
+    for test_case in test_cases:
+        syllable = TU(test_case)
+        syllable()

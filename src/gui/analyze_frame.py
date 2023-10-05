@@ -5,6 +5,8 @@ from src.core.analysis import generate_char_dictionary
 from src.utils.fonts.font_loader import loadfont
 from src.utils.text import get_unicode_string
 
+DELIMITER = "DEL"
+
 
 class AnalyzeFrame(ttk.Frame):
     def __init__(
@@ -177,7 +179,7 @@ class AnalyzeFrame(ttk.Frame):
         style = ttk.Style()
         style.configure("LeftAligned.TButton", anchor="w")
         for idx, char in enumerate(items):
-            rank, comb, count = char.split(":")
+            rank, comb, count = char.split(DELIMITER)
             y_multiplier, x_multiplier = divmod(idx, num_columns)
             comb_btn = ttk.Button(
                 parent,
@@ -340,7 +342,7 @@ class AnalyzeFrame(ttk.Frame):
         # Analyze Mode or Search Mode
         self._matched_words = (
             [
-                f"{idx+1}:{word}:{count}"
+                f"{idx+1}{DELIMITER}{word}{DELIMITER}{count}"
                 for idx, (word, count) in enumerate(
                     generate_char_dictionary(
                         char=self._text.get(), words=self._words
