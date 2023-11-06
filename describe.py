@@ -2,18 +2,22 @@ import os
 from typing import Collection, List
 from matplotlib import pyplot as plt
 import pandas as pd
-from src.config.paths import GEN_DIR, RAW_DATA, WAV_DATA
-from src.utils.file import fget
-from src.utils.project import speaker_dict, time_dict, month_dict, year_dict
+from config import (
+    GEN_DIR,
+    RAW_DATA,
+    WAV_DATA,
+    speaker_dict,
+    time_dict,
+    month_dict,
+    year_dict,
+)
 
 
 def describe():
-    audios = {audio.stem for audio in fget(WAV_DATA, extension="txt")}
-    scripts = {script.stem for script in fget(RAW_DATA, extension="txt")}
-
+    audios = {audio.stem for audio in WAV_DATA.glob("*.txt")}
+    scripts = {script.stem for script in RAW_DATA.glob("*.txt")}
     print_stage_status(audios, desc="audio file")
     print_stage_status(scripts, desc="script file")
-
     generate([script[:12] for script in scripts])
 
 

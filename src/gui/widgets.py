@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from src.utils.text import copy_text, get_unicode_string, unicode_as_df
+from src.utils.text import copy_text, get_unicode_string
 
 
 class TestItem:
@@ -94,13 +94,6 @@ class TestItem:
         self.set_num_chars(0)
         self.text = ""
         self.set_unicode_value("")
-
-    def _get_unicode_info(self, text: str) -> None:
-        if self.text != "":
-            df = unicode_as_df(text)
-            unicodes = df.loc[:, "unicode"]
-            counts = df.loc[:, "count"]
-            max_num = int(unicodes.count())
 
 
 class ScrollableFrame(ttk.Frame):

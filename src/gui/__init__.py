@@ -1,8 +1,8 @@
 from tkinter import Misc, ttk
 import tkinter as tk
 from typing import Callable, List, Tuple
-from src.config.constants import Language
-from src.config.paths import (
+from config import (
+    Language,
     CHARS_BN_FILE,
     CHARS_MM_FILE,
     CHARS_S550_FILE,
@@ -10,9 +10,9 @@ from src.config.paths import (
     WORDS_MM_FILE,
     WORDS_S550_FILE,
 )
-from src.core.correction import Correction
-from src.core.transliteration import Transliteration
-from src.utils.file import fget_list
+from src.modules.glyph_correction import GlyphCorrection
+from src.modules.mm_transliteration import MMTransliteration
+from src.utils.file import read_list
 from .test_frame import TestFrame
 from .analyze_frame import AnalyzeFrame
 
@@ -35,12 +35,12 @@ class MainFrame(ttk.Notebook):
         self.load_frames()
 
     def load_content(self):
-        self.s550_words = fget_list(WORDS_S550_FILE)
-        self.bn_words = fget_list(WORDS_BN_FILE)
-        self.mm_words = fget_list(WORDS_MM_FILE)
-        self.s550_chars = fget_list(CHARS_S550_FILE)
-        self.bn_chars = fget_list(CHARS_BN_FILE)
-        self.mm_chars = fget_list(CHARS_MM_FILE)
+        self.s550_words = read_list(WORDS_S550_FILE)
+        self.bn_words = read_list(WORDS_BN_FILE)
+        self.mm_words = read_list(WORDS_MM_FILE)
+        self.s550_chars = read_list(CHARS_S550_FILE)
+        self.bn_chars = read_list(CHARS_BN_FILE)
+        self.mm_chars = read_list(CHARS_MM_FILE)
 
     def reload_content(self, lang: Language) -> Tuple[List[str], List[str]]:
         if lang == Language.S550:
@@ -50,14 +50,14 @@ class MainFrame(ttk.Notebook):
         else:
             return self.mm_words, self.mm_chars
 
-    def load_callables(self) -> Tuple[Callable, Callable, Callable]:
-        c = Correction()
-        t = Transliteration()
-        return c.correct, t.transliterate, t.word_map
+    def load_callables(self) -> Tuple[Callable, Callable]:
+        c = GlyphCorrection()
+        t = MMTransliteration()
+        return c.correct, t.transliterate
 
     def load_frames(self):
-        correct, transliterate, word_map = self.load_callables()
-        self.text_tab = TestFrame(self, correct, transliterate, word_map)
+        correct, transliterate = self.load_callables()
+        self.text_tab = TestFrame(self, correct, transliterate)
         self.analyze_tab_s550 = AnalyzeFrame(
             self, self.s550_words, self.s550_chars, True
         )

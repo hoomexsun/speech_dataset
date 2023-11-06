@@ -1,40 +1,115 @@
-from pathlib import Path
-import shutil
-from striprtf.striprtf import rtf_to_text
-from typing import Dict, List, Tuple
-import json
 import csv
+import json
+import shutil
+from pathlib import Path
+from striprtf.striprtf import rtf_to_text
 from tqdm import tqdm
-from src.config.paths import RAW_DATA, RTF_DATA
-from src.utils.text import get_unicode_string, split_id_and_utt
+from typing import Dict, List, Tuple, Callable
+from .text import get_unicode_string
+from .utterance import split_utterances, str_to_dict
 
 
-def fget(dir: Path, extension: str = "txt") -> List[Path]:
-    return list(dir.glob(f"*.{extension.lower()}"))
+# Function to process a directory of text files.
+def process_directory(
+    fn: Callable,
+    input_dir: Path | str,
+    output_dir: Path | str,
+    file_pattern: str = "*.txt",
+    desc: str = "Running...",
+    return_result: bool = False,
+) -> Dict:
+    input_dir, output_dir = Path(input_dir), Path(output_dir)
+    content_results = {}
+    files = list(input_dir.glob(file_pattern))
+    for file_path in tqdm(files, total=len(files), desc=desc):
+        content = fn(file_path=file_path)
+        write_text(
+            content=content,
+            dest=change_file_extension(file_path=file_path, input_dir=output_dir),
+        )
+        if return_result:
+            content_results.update(str_to_dict(content))
+    return content_results
 
 
-def fpath_unicode(file_path: Path) -> Path:
-    file_name = file_path.stem + "_utf"
-    return file_path.parent / file_name
+# File reading functions.
+def read_tokens(file_path: Path | str) -> List[str]:
+    return read_file(file_path=Path(file_path)).split()
 
 
-def change_path(file_path: Path, dir: Path, extension: str = "txt") -> Path:
-    return dir / f"{file_path.stem}.{extension}"
+def read_list(file_path: Path | str) -> List[str]:
+    return read_file(file_path=Path(file_path)).split("\n")
 
 
-def fget_items(file_path: Path) -> Dict | List[str]:
-    if file_path.suffix.lower() == ".json":
-        return fget_dict(file_path)
+def read_dict(file_path: Path) -> Dict:
+    return json.loads(read_file(file_path=file_path.with_suffix(".json")))
+
+
+def read_file(file_path: Path | str) -> str:
+    return Path(file_path).read_text(encoding="utf-8")
+
+
+# File writing functions.
+def write_text(
+    content: str,
+    dest: Path | str,
+    exist_ok: bool = True,
+    use_unicode: bool = False,
+    skip_newline: bool = False,
+) -> None:
+    dest = Path(dest)
+    if use_unicode:
+        content = get_unicode_string(content, skip_newline)
+        dest = dest.parent / Path(dest.stem + "_utf")
+    write_file(content=content, dest=dest.with_suffix(".txt"), exist_ok=exist_ok)
+
+
+def write_json(
+    data: Dict,
+    dest: Path | str,
+    use_unicode: bool = False,
+) -> None:
+    dest = Path(dest)
+    if use_unicode:
+        json_data = json.dumps(data)
+        dest = dest.parent / Path(dest.stem + "_utf")
     else:
-        return fget_list(file_path)
+        json_data = json.dumps(data, ensure_ascii=False)
+    write_file(content=json_data, dest=dest.with_suffix(".json"))
 
 
-def fget_dict(file_path: Path) -> Dict:
-    return json.loads(fread(file_path=file_path.with_suffix(".json")))
+def write_csv(data: Dict, fieldnames: Tuple, dest: Path | str) -> None:
+    dest = Path(dest)
+    with open(
+        dest.with_suffix(".csv"), mode="w", encoding="utf-8", newline=""
+    ) as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for word_bn, word_mm in data.items():
+            writer.writerow({fieldnames[0]: word_bn, fieldnames[1]: word_mm})
 
 
-def fget_list(file_path: Path) -> List[str]:
-    return fread(file_path=file_path).split("\n")
+def write_file(content: str, dest: Path | str, exist_ok: bool = True) -> None:
+    Path(dest).parent.mkdir(parents=True, exist_ok=exist_ok)
+    Path(dest).write_text(data=content, encoding="utf-8")
+
+
+# Function to handle file name changes.
+def change_file_extension(
+    file_path: Path, input_dir: Path, extension: str = "txt"
+) -> Path:
+    return input_dir / f"{file_path.stem}.{extension}"
+
+
+# Utterance Level
+def get_utt_ids(file_path: Path) -> List[str]:
+    utt_ids, _ = split_utterances(content=read_file(file_path=file_path))
+    return utt_ids
+
+
+def read_utterances(file_path: Path) -> str:
+    _, utterances = split_utterances(content=read_file(file_path=file_path))
+    return "\n".join(utterances)
 
 
 #! EXPERIMENTAL
@@ -58,56 +133,24 @@ def fget_rtf_text(file_path: Path) -> str:
     return plain_text
 
 
-def fread(file_path: Path) -> str:
-    return file_path.read_text(encoding="utf-8")
+# ! This will overwrite existing files, take care!!!
+def create_raw_folder() -> None:
+    # rtf/*.rtf -> raw/*.txt
+    input_dir = Path("data/lang/rtf")
+    output_dir = Path("data/lang/raw")
+    files = list(input_dir.glob("*.rtf"))
+    for file_path in files:
+        write_text(
+            content="",
+            dest=change_file_extension(file_path=file_path, input_dir=output_dir),
+            exist_ok=False,
+        )
 
 
-def fwrite_text(
-    content: str,
-    file_path: Path,
-    exist_ok: bool = True,
-    unicode: bool = False,
-    skip_newline: bool = False,
-) -> None:
-    if unicode:
-        content = get_unicode_string(content, skip_newline)
-        file_path = fpath_unicode(file_path)
-    fwrite(content=content, file_path=file_path.with_suffix(".txt"), exist_ok=exist_ok)
-
-
-def fwrite_md(content: str, file_path: Path) -> None:
-    fwrite(content=content, file_path=file_path.with_suffix(".md"))
-
-
-def fwrite_json(data: Dict, file_path: Path, unicode: bool = False) -> None:
-    if unicode:
-        json_data = json.dumps(data)
-        file_path = fpath_unicode(file_path)
-    else:
-        json_data = json.dumps(data, ensure_ascii=False)
-    fwrite(content=json_data, file_path=file_path.with_suffix(".json"))
-
-
-def fwrite_csv(data: Dict, fieldnames: Tuple, file_path: Path) -> None:
-    with open(
-        file_path.with_suffix(".csv"), mode="w", encoding="utf-8", newline=""
-    ) as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        for word_bn, word_mm in data.items():
-            writer.writerow({fieldnames[0]: word_bn, fieldnames[1]: word_mm})
-
-
-def fwrite(content: str, file_path: Path, exist_ok: bool = True) -> None:
-    file_path.parent.mkdir(parents=True, exist_ok=exist_ok)
-    file_path.write_text(data=content, encoding="utf-8")
-
-
-# Audio File
 # ! This will overwrite existing files, take care!!!
 def create_segment_folder(
     wav_files: List[Path], output_parent_dir: Path, include_file: bool = False
-):
+) -> None:
     paths = [output_parent_dir / path.stem for path in wav_files]
     total_files = len(wav_files)
 
@@ -126,40 +169,4 @@ def create_segment_folder(
                 destination_path.mkdir(parents=True, exist_ok=True)
                 shutil.copy(original_file, destination_path / original_file.name)
                 pbar.update(1)
-
     print(f"Created folders for segmented wav files ({total_files} files)")
-
-
-# Text File
-# ! This will overwrite existing files, take care!!!
-@staticmethod
-def create_raw_folder():
-    files = fget(dir=RTF_DATA, extension="rtf")
-    for file_path in files:
-        fwrite_text(
-            content="",
-            file_path=change_path(file_path=file_path, dir=RAW_DATA),
-            exist_ok=False,
-        )
-
-
-# Utterance Utility Functions
-def fbuild_id(file_path: Path, idx: int) -> str:
-    utt_id = file_path.name.split(".")[0]
-    if idx < 9:  # idx starts from 0
-        utt_id = f"{utt_id}00{idx+1}"
-    elif idx < 99:
-        utt_id = f"{utt_id}0{idx+1}"
-    else:
-        utt_id = f"{utt_id}{idx+1}"
-    return utt_id
-
-
-def fget_ids(file_path: Path) -> List[str]:
-    utt_ids, _ = split_id_and_utt(content=fread(file_path=file_path))
-    return utt_ids
-
-
-def fget_utterances(file_path: Path) -> str:
-    _, utterances = split_id_and_utt(content=fread(file_path=file_path))
-    return "\n".join(utterances)

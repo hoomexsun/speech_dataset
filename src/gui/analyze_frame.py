@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Collection, List
 from tkinter import ttk, font
-from src.core.analysis import generate_char_dictionary
+from src.analysis import generate_char_dictionary
 from src.utils.fonts.font_loader import loadfont
 from src.utils.text import get_unicode_string
 
